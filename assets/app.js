@@ -504,8 +504,8 @@ function renderWelcome() {
         <div class="welcome-step">
           <div class="ws-num">3</div>
           <div class="ws-body">
-            <div class="ws-title">集點兌換限定麵包</div>
-            <div class="ws-desc">10 / 20 / 30 點三階層獎勵</div>
+            <div class="ws-title">集滿 10 點兌換碳麵包</div>
+            <div class="ws-desc">完成日月潭低碳旅程的專屬獎勵</div>
           </div>
         </div>
       </div>
