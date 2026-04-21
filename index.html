@@ -11,12 +11,23 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- LIFF SDK（正式部署時啟用） -->
-  <!-- <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script> -->
+  <!-- QR 掃碼 -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <!-- LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
+  <!-- LINE 狀態列（綁 LINE 時顯示使用者名稱） -->
+  <div id="lineStatus" class="line-status">
+    <span class="line-dot"></span>
+    <span id="lineStatusText">正在初始化 LINE...</span>
+  </div>
+
   <div id="app"></div>
+
   <script src="assets/data.js"></script>
+  <script src="assets/liff-init.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

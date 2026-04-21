@@ -16,61 +16,65 @@ const CATEGORIES = {
 };
 
 // ============================================
-// 地點資料（每個點都用拍照 AI 辨識）
+// 地點資料
 // 欄位說明：
-//   id / name / category / points / co2 / icon / addr
-//   lat, lng        ─ GPS 座標（Leaflet 地圖用，後台可編輯）
-//   verifyMethod    ─ 'photo' 拍照辨識
-//   photoHint       ─ 提示遊客拍什麼
-//   keywords        ─ AI 辨識關鍵特徵
+//   id / name / category / points / co2 / icon / addr / lat / lng
+//   verifyMethod    ─ 'qr'（掃店家 QR）或 'photo'（拍照 AI 辨識）
+//   qrHint          ─ QR 掃碼提示（verifyMethod = qr 用）
+//   photoHint       ─ 拍照提示（verifyMethod = photo 用）
+//   keywords        ─ AI 影像辨識關鍵特徵（photo 用）
+//
+// 規則：
+//   - 景點類 (landmark)：拍照 AI 辨識（現場無櫃檯可放 QR）
+//   - 其他三類（體驗/旅宿/餐廳）：掃現場 QR Code（有店員把關更準確）
 // ============================================
 const LOCATIONS = [
-  // 體驗型（活動類）
+  // 體驗型（QR 掃碼）
   { id: 'EXP-SUP',   name: '日月潭立槳 SUP',       category: 'experience',    points: 3, co2: 2.5, icon: '🏄',
     addr: '南投縣魚池鄉伊達邵碼頭',            lat: 23.8575, lng: 120.9222,
-    verifyMethod: 'photo', photoHint: '請拍攝立槳板或自己在板上的自拍', keywords: ['立槳', 'SUP', '湖面', '船板'] },
+    verifyMethod: 'qr', qrHint: '請掃描業者櫃檯張貼的 QR Code' },
   { id: 'EXP-KAYAK', name: '獨木舟體驗',           category: 'experience',    points: 3, co2: 2.5, icon: '🛶',
     addr: '南投縣魚池鄉朝霧碼頭',              lat: 23.8716, lng: 120.9182,
-    verifyMethod: 'photo', photoHint: '請拍攝獨木舟與槳', keywords: ['獨木舟', '槳', '湖面'] },
+    verifyMethod: 'qr', qrHint: '請掃描業者櫃檯張貼的 QR Code' },
   { id: 'EXP-BIKE',  name: '環潭電動單車',         category: 'experience',    points: 2, co2: 4.0, icon: '🚲',
     addr: '南投縣魚池鄉向山遊客中心旁',        lat: 23.8466, lng: 120.9082,
-    verifyMethod: 'photo', photoHint: '請拍攝電動單車或租借站', keywords: ['單車', '電動', '自行車道'] },
+    verifyMethod: 'qr', qrHint: '請掃描租借站的 QR Code' },
   { id: 'EXP-CABLE', name: '日月潭纜車站',         category: 'experience',    points: 2, co2: 1.5, icon: '🚠',
     addr: '南投縣魚池鄉金天巷 180 號',         lat: 23.8747, lng: 120.9472,
-    verifyMethod: 'photo', photoHint: '請拍攝纜車車廂或站體', keywords: ['纜車', '車廂', '山景'] },
+    verifyMethod: 'qr', qrHint: '請掃描纜車站售票口的 QR Code' },
   { id: 'EXP-BOAT',  name: '電動遊湖船',           category: 'experience',    points: 2, co2: 2.0, icon: '⛵',
     addr: '南投縣魚池鄉水社碼頭',              lat: 23.8697, lng: 120.9108,
-    verifyMethod: 'photo', photoHint: '請拍攝船隻或水社碼頭', keywords: ['遊船', '碼頭', '湖'] },
+    verifyMethod: 'qr', qrHint: '請掃描船公司售票口的 QR Code' },
 
-  // 旅宿業
+  // 旅宿業（QR 掃碼）
   { id: 'STAY-01',   name: '映涵渡假飯店',         category: 'accommodation', points: 5, co2: 3.0, icon: '🏨',
     addr: '南投縣魚池鄉水社村中興路 101 號',   lat: 23.8700, lng: 120.9110,
-    verifyMethod: 'photo', photoHint: '請拍攝飯店大廳或房卡', keywords: ['飯店', '大廳', '房卡'] },
+    verifyMethod: 'qr', qrHint: '請掃描飯店櫃檯的入住打卡 QR Code' },
   { id: 'STAY-02',   name: '日月行館',             category: 'accommodation', points: 5, co2: 3.0, icon: '🏨',
     addr: '南投縣魚池鄉涵碧半島中興路 139 號', lat: 23.8683, lng: 120.9086,
-    verifyMethod: 'photo', photoHint: '請拍攝飯店大廳或房卡', keywords: ['飯店', '大廳', '房卡'] },
+    verifyMethod: 'qr', qrHint: '請掃描飯店櫃檯的入住打卡 QR Code' },
   { id: 'STAY-03',   name: '朵麗絲的家民宿',       category: 'accommodation', points: 5, co2: 3.0, icon: '🏨',
     addr: '南投縣魚池鄉日月村水秀街 17 號',    lat: 23.8575, lng: 120.9225,
-    verifyMethod: 'photo', photoHint: '請拍攝民宿外觀或房卡', keywords: ['民宿', '外觀', '房卡'] },
+    verifyMethod: 'qr', qrHint: '請掃描民宿櫃檯的入住打卡 QR Code' },
   { id: 'STAY-04',   name: '向山行館',             category: 'accommodation', points: 5, co2: 3.0, icon: '🏨',
     addr: '南投縣魚池鄉中山路 599-1 號',       lat: 23.8470, lng: 120.9090,
-    verifyMethod: 'photo', photoHint: '請拍攝民宿外觀或房卡', keywords: ['行館', '民宿', '房卡'] },
+    verifyMethod: 'qr', qrHint: '請掃描民宿櫃檯的入住打卡 QR Code' },
 
-  // 餐廳類（含漁光窯烤雙店、咖啡廳、餐廳）
+  // 餐廳類（QR 掃碼）
   { id: 'REST-YGPL', name: '漁光窯烤・埔里店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
     addr: '南投縣埔里鎮中山路一段',            lat: 23.9653, lng: 120.9689,
-    verifyMethod: 'photo', photoHint: '請拍攝店面招牌或窯烤麵包', keywords: ['窯烤', '麵包', '招牌'] },
+    verifyMethod: 'qr', qrHint: '請掃描門市結帳台的 QR Code' },
   { id: 'REST-YGYC', name: '漁光窯烤・魚池店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
     addr: '南投縣魚池鄉中山路 318 號',         lat: 23.8967, lng: 120.9453,
-    verifyMethod: 'photo', photoHint: '請拍攝店面招牌或窯烤麵包', keywords: ['窯烤', '麵包', '招牌'] },
+    verifyMethod: 'qr', qrHint: '請掃描門市結帳台的 QR Code' },
   { id: 'REST-YM',   name: '遊牧咖啡',             category: 'restaurant',    points: 1, co2: 0.8, icon: '☕',
     addr: '南投縣魚池鄉中山路 450 號',         lat: 23.8933, lng: 120.9417,
-    verifyMethod: 'photo', photoHint: '請拍攝店面、招牌或餐點', keywords: ['咖啡', '店面', '招牌'] },
+    verifyMethod: 'qr', qrHint: '請掃描店內桌卡 QR Code' },
   { id: 'REST-XDY',  name: '先得月餐廳',           category: 'restaurant',    points: 2, co2: 1.5, icon: '🍽️',
     addr: '南投縣魚池鄉水社村中山路 112 號',   lat: 23.8700, lng: 120.9100,
-    verifyMethod: 'photo', photoHint: '請拍攝店面或餐點', keywords: ['先得月', '餐廳', '店面'] },
+    verifyMethod: 'qr', qrHint: '請掃描店內桌卡 QR Code' },
 
-  // 景點類
+  // 景點類（拍照 AI 辨識）
   { id: 'LAND-XS',   name: '向山遊客中心',         category: 'landmark',      points: 2, co2: 0.5, icon: '🏛️',
     addr: '南投縣魚池鄉中山路 599 號',         lat: 23.8466, lng: 120.9082,
     verifyMethod: 'photo', photoHint: '請拍攝清水模建築與開放式廊道', keywords: ['向山', '遊客中心', '清水模', '建築'] },
@@ -146,6 +150,38 @@ const DB = {
     state.redeemed.push({ tierId: tier.id, timestamp: Date.now(), code, used: false, usedAt: null });
     this.save(state);
     return { ok: true, code };
+  },
+
+  // ============================================
+  // QR 掃碼驗證
+  // QR 內容格式：checkin:LOCATION_ID（例如 checkin:EXP-SUP）
+  // 或直接是網址 https://domain/?checkin=LOCATION_ID
+  // ============================================
+  verifyQR(location, qrContent) {
+    if (!qrContent) return { ok: false, msg: 'QR Code 內容為空' };
+
+    // 解析 QR Code 內容
+    let scannedId = null;
+    const trimmed = qrContent.trim();
+    if (trimmed.startsWith('checkin:')) {
+      scannedId = trimmed.replace('checkin:', '').trim().toUpperCase();
+    } else if (trimmed.includes('checkin=')) {
+      const match = trimmed.match(/checkin=([A-Z0-9-]+)/i);
+      if (match) scannedId = match[1].toUpperCase();
+    } else {
+      // 直接把內容當作 ID
+      scannedId = trimmed.toUpperCase();
+    }
+
+    if (scannedId !== location.id) {
+      return {
+        ok: false,
+        scannedId,
+        msg: `此 QR Code 屬於「${scannedId}」，不是「${location.name}」的打卡碼`
+      };
+    }
+
+    return { ok: true, scannedId, msg: `已驗證「${location.name}」的打卡碼` };
   },
 
   // ============================================

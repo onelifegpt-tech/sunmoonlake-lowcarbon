@@ -104,6 +104,11 @@ function renderHome() {
 function renderLocationCard(l) {
   const meta = CATEGORIES[l.category];
   const checked = DB.hasCheckedIn(state, l.id);
+  const isPhoto = l.verifyMethod === 'photo';
+  const methodBadge = isPhoto
+    ? '<span class="badge photo">📷 拍照辨識</span>'
+    : '<span class="badge qr">📱 QR 掃碼</span>';
+  const methodIcon = isPhoto ? '📷' : '📱';
   return `
     <div class="location-card ${checked ? 'checked' : ''}" data-id="${l.id}">
       <div class="location-icon" style="background:${meta.color}22">${l.icon}</div>
@@ -113,10 +118,10 @@ function renderLocationCard(l) {
         <div class="location-meta">
           <span class="badge points">+${l.points} 點</span>
           <span class="badge co2">減 ${l.co2} kg CO₂</span>
-          <span class="badge photo">📷 拍照辨識</span>
+          ${methodBadge}
         </div>
       </div>
-      <div class="location-status">${checked ? '✅' : '📷'}</div>
+      <div class="location-status">${checked ? '✅' : methodIcon}</div>
     </div>
   `;
 }
@@ -272,6 +277,181 @@ function renderHistory() {
     }).join('')}
     <div class="reset-link" id="resetBtn">重置所有資料（僅供測試）</div>
   `;
+}
+
+// ============================================
+// QR 掃碼打卡 Modal（體驗 / 旅宿 / 餐廳）
+// 使用 html5-qrcode，支援 LINE LIFF liff.scanCodeV2()
+// ============================================
+function showQRCheckIn(location) {
+  const meta = CATEGORIES[location.category];
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal photo-modal">
+      <div class="photo-modal-header" style="background:${meta.color}22">
+        <div class="photo-loc-icon">${location.icon}</div>
+        <div>
+          <div class="photo-loc-name">${location.name}</div>
+          <div class="photo-loc-addr">📍 ${location.addr}</div>
+        </div>
+      </div>
+
+      <div class="photo-stage">
+        <div class="photo-step" data-step="hint">
+          <div class="photo-hint-card">
+            <div class="photo-hint-icon">📱</div>
+            <div class="photo-hint-title">請掃描 QR Code 打卡</div>
+            <div class="photo-hint-text">${location.qrHint || '請掃描店家提供的 QR Code'}</div>
+          </div>
+
+          <div class="photo-rewards">
+            <div class="photo-reward-item">
+              <div class="pr-label">獲得點數</div>
+              <div class="pr-value">+${location.points} 點</div>
+            </div>
+            <div class="photo-reward-item">
+              <div class="pr-label">減碳貢獻</div>
+              <div class="pr-value">${location.co2} kg CO₂</div>
+            </div>
+          </div>
+
+          <button class="photo-upload-btn" id="startScanBtn">📷 開啟相機掃碼</button>
+
+          <div style="margin-top:12px;padding:10px;background:#f9fafb;border-radius:8px;font-size:12px;color:#666">
+            <div style="font-weight:600;margin-bottom:6px">💡 或手動輸入 QR 內容（測試用）</div>
+            <div style="display:flex;gap:6px">
+              <input id="manualQR" placeholder="checkin:${location.id}"
+                style="flex:1;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-family:monospace;font-size:12px">
+              <button id="manualSubmit" style="padding:6px 12px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">送出</button>
+            </div>
+          </div>
+
+          <div class="photo-upload-tip">💡 真實環境：於 LINE 內點擊連結後，LIFF 會自動開啟系統掃碼器</div>
+        </div>
+
+        <div class="photo-step" data-step="scanning" style="display:none">
+          <div id="qrReader" style="width:100%;border-radius:10px;overflow:hidden;margin-bottom:14px"></div>
+          <div class="ai-status-title">📷 對準 QR Code</div>
+          <div class="ai-status-sub">請將店家提供的 QR Code 置於畫面中央</div>
+          <button class="btn btn-outline" id="cancelScan" style="margin-top:12px">取消掃描</button>
+        </div>
+
+        <div class="photo-step" data-step="result" style="display:none">
+          <div id="qrResult"></div>
+        </div>
+      </div>
+
+      <button class="modal-close-x" id="modalCloseX">✕</button>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+
+  let html5QrScanner = null;
+  const cleanup = () => {
+    if (html5QrScanner) {
+      try { html5QrScanner.stop(); html5QrScanner.clear(); } catch (e) {}
+      html5QrScanner = null;
+    }
+  };
+
+  backdrop.querySelector('#modalCloseX').onclick = () => { cleanup(); backdrop.remove(); };
+
+  // 處理掃碼結果
+  const handleScanResult = (qrContent) => {
+    const verify = DB.verifyQR(location, qrContent);
+    const resultBox = backdrop.querySelector('#qrResult');
+    backdrop.querySelector('[data-step="scanning"]').style.display = 'none';
+    backdrop.querySelector('[data-step="hint"]').style.display = 'none';
+    backdrop.querySelector('[data-step="result"]').style.display = 'block';
+
+    if (verify.ok) {
+      DB.checkIn(state, location);
+      resultBox.innerHTML = `
+        <div style="font-size:70px;text-align:center;margin:14px 0">${location.icon}</div>
+        <div class="result-badge success" style="display:block;text-align:center;margin:0 auto 10px">✓ 掃碼驗證成功</div>
+        <div class="result-location" style="text-align:center">${location.name}</div>
+        <div class="result-confidence" style="text-align:center">掃描內容：<code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px">${qrContent}</code></div>
+        <div class="result-points">
+          <div class="rp-line"><span>獲得點數</span><strong>+${location.points} 點</strong></div>
+          <div class="rp-line"><span>減碳貢獻</span><strong>${location.co2} kg CO₂</strong></div>
+        </div>
+        <button class="btn btn-primary" id="qrResultOk">完成・繼續集點</button>
+      `;
+      resultBox.querySelector('#qrResultOk').onclick = () => { backdrop.remove(); render(); };
+    } else {
+      resultBox.innerHTML = `
+        <div style="font-size:60px;text-align:center;margin:14px 0">⚠️</div>
+        <div class="result-badge fail" style="display:block;text-align:center;margin:0 auto 10px">✗ QR 驗證失敗</div>
+        <div class="result-location" style="text-align:center">${verify.msg}</div>
+        ${verify.scannedId ? `<div class="result-confidence" style="text-align:center">掃到：<code style="background:#fef2f2;padding:2px 8px;border-radius:4px;font-size:12px">${verify.scannedId}</code></div>` : ''}
+        <button class="btn btn-primary" id="qrRetry">重新掃描</button>
+        <button class="btn btn-outline" id="qrCancel" style="margin-top:8px">稍後再試</button>
+      `;
+      resultBox.querySelector('#qrRetry').onclick = () => { backdrop.remove(); showQRCheckIn(location); };
+      resultBox.querySelector('#qrCancel').onclick = () => backdrop.remove();
+    }
+  };
+
+  // 按鈕：開啟相機掃碼
+  backdrop.querySelector('#startScanBtn').onclick = async () => {
+    // 若在 LINE LIFF 環境，優先用原生掃碼
+    if (window.liff && window.liff.isInClient && window.liff.isInClient()) {
+      try {
+        const result = await window.liff.scanCodeV2();
+        if (result && result.value) {
+          handleScanResult(result.value);
+          return;
+        }
+      } catch (e) {
+        console.warn('LIFF scan failed, fallback to browser camera', e);
+      }
+    }
+
+    // 瀏覽器相機掃碼（html5-qrcode）
+    backdrop.querySelector('[data-step="hint"]').style.display = 'none';
+    backdrop.querySelector('[data-step="scanning"]').style.display = 'block';
+
+    if (typeof Html5Qrcode === 'undefined') {
+      alert('QR 掃碼模組載入中，請稍後再試（或使用手動輸入）');
+      backdrop.querySelector('[data-step="scanning"]').style.display = 'none';
+      backdrop.querySelector('[data-step="hint"]').style.display = 'block';
+      return;
+    }
+
+    html5QrScanner = new Html5Qrcode('qrReader');
+    try {
+      await html5QrScanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        (decodedText) => {
+          cleanup();
+          handleScanResult(decodedText);
+        },
+        () => {} // 忽略每幀失敗
+      );
+    } catch (err) {
+      alert('無法啟動相機：' + err + '\n請改用手動輸入');
+      backdrop.querySelector('[data-step="scanning"]').style.display = 'none';
+      backdrop.querySelector('[data-step="hint"]').style.display = 'block';
+    }
+  };
+
+  backdrop.querySelector('#cancelScan').onclick = () => {
+    cleanup();
+    backdrop.querySelector('[data-step="scanning"]').style.display = 'none';
+    backdrop.querySelector('[data-step="hint"]').style.display = 'block';
+  };
+
+  // 手動輸入（測試用）
+  backdrop.querySelector('#manualSubmit').onclick = () => {
+    const val = backdrop.querySelector('#manualQR').value.trim();
+    if (!val) { alert('請輸入 QR Code 內容'); return; }
+    handleScanResult(val);
+  };
+  backdrop.querySelector('#manualQR').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') backdrop.querySelector('#manualSubmit').click();
+  });
 }
 
 // ============================================
@@ -531,7 +711,7 @@ function bindEvents() {
     c.onclick = () => { currentCategory = c.dataset.cat; render(); };
   });
 
-  // 地點卡：點擊開啟拍照上傳
+  // 地點卡：點擊依 verifyMethod 分流
   document.querySelectorAll('.location-card[data-id]').forEach(c => {
     c.onclick = () => {
       const loc = getActiveLocations().find(l => l.id === c.dataset.id);
@@ -539,7 +719,11 @@ function bindEvents() {
         showModal('✅', '已完成打卡', '此地點您已累積過點數，請繼續前往其他打卡點');
         return;
       }
-      showPhotoCheckIn(loc);
+      if (loc.verifyMethod === 'qr') {
+        showQRCheckIn(loc);
+      } else {
+        showPhotoCheckIn(loc);
+      }
     };
   });
 

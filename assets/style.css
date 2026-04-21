@@ -5,6 +5,29 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* ===== LINE 狀態列（綁 LINE 身份） ===== */
+.line-status {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 6px 14px;
+  background: #f3f4f6;
+  color: #555;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.line-status[data-state="ok"]      { background: #ecfdf5; color: #065f46; }
+.line-status[data-state="demo"]    { background: #fffbeb; color: #92400e; }
+.line-status[data-state="loading"] { background: #eff6ff; color: #1e40af; }
+.line-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+}
+.line-status[data-state="loading"] .line-dot { animation: linePulse 1s infinite; }
+@keyframes linePulse { 50% { opacity: 0.3; } }
+
 :root {
   --line-green: #06C755;
   --line-green-dark: #05a847;
@@ -216,6 +239,7 @@ html, body {
 .badge.points { background: #e6f9ec; color: var(--line-green); }
 .badge.co2 { background: #f0f7ff; color: #5a8fcc; }
 .badge.photo { background: #fef3c7; color: #92400e; }
+.badge.qr { background: #dbeafe; color: #1e40af; }
 
 .location-status {
   font-size: 20px;
