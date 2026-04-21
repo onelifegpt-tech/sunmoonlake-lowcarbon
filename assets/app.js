@@ -642,8 +642,9 @@ function render() {
 
   document.getElementById('app').innerHTML = `
     <div class="app-header">
-      <h1>🌿 日月潭低碳集點</h1>
-      <div class="subtitle">到 ${getActiveLocations().length} 個合作點・拍照 AI 辨識・集點兌換麵包</div>
+      <div class="brand-eyebrow">Sun Moon Lake · Low-Carbon Journey</div>
+      <h1>日月潭低碳旅遊・集點手帖</h1>
+      <div class="subtitle">Collect · Trace · Redeem</div>
     </div>
     ${renderProgress()}
     ${renderTabs()}
@@ -662,35 +663,37 @@ function renderWelcome() {
   document.getElementById('app').innerHTML = `
     <div class="welcome">
       <div class="welcome-hero">
-        <div class="welcome-emoji">🌿</div>
-        <h1>歡迎來到<br>日月潭低碳集點</h1>
-        <p>拍照打卡・累積減碳・兌換麵包</p>
+        <div class="eyebrow">Sun Moon Lake · Since 2026</div>
+        <h1>日月潭低碳旅遊<br>集點手帖</h1>
+        <p>記錄每一次的低碳足跡，<br>完成旅程時，兌換一顆專屬於你的碳麵包。</p>
       </div>
+
       <div class="welcome-steps">
         <div class="welcome-step">
-          <div class="ws-num">1</div>
+          <div class="ws-num">01</div>
           <div class="ws-body">
-            <div class="ws-title">前往合作地點</div>
-            <div class="ws-desc">體驗、旅宿、餐廳、景點 共 ${getActiveLocations().length} 個點</div>
+            <div class="ws-title">踏訪在地 ${getActiveLocations().length} 個據點</div>
+            <div class="ws-desc">體驗活動、旅宿、在地餐飲、景點打卡 ─ 四大類別，皆為嚴選合作夥伴。</div>
           </div>
         </div>
         <div class="welcome-step">
-          <div class="ws-num">2</div>
+          <div class="ws-num">02</div>
           <div class="ws-body">
-            <div class="ws-title">拍照上傳 AI 辨識</div>
-            <div class="ws-desc">系統自動比對地點並加點</div>
+            <div class="ws-title">景點拍照 · 店家掃碼</div>
+            <div class="ws-desc">景點類透過 AI 影像辨識記錄足跡，體驗與店家掃描專屬 QR Code 驗證。</div>
           </div>
         </div>
         <div class="welcome-step">
-          <div class="ws-num">3</div>
+          <div class="ws-num">03</div>
           <div class="ws-body">
-            <div class="ws-title">集滿 10 點兌換碳麵包</div>
-            <div class="ws-desc">完成日月潭低碳旅程的專屬獎勵</div>
+            <div class="ws-title">集滿十點，兌換碳麵包</div>
+            <div class="ws-desc">專屬於完成旅程的紀念款低碳麵包 ─ 非賣品，僅致贈於每一位低碳旅人。</div>
           </div>
         </div>
       </div>
+
       <div class="welcome-actions">
-        <button class="btn btn-primary" id="startBtn">開始集點</button>
+        <button class="btn btn-primary" id="startBtn">展開旅程</button>
       </div>
     </div>
   `;
