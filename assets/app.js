@@ -232,7 +232,7 @@ function renderReward() {
             </div>
             <div class="modal-code">${r.code}</div>
             <div style="text-align:center;font-size:12px;color:var(--text-light)">
-              ${r.used ? `✓ 已於 ${new Date(r.usedAt).toLocaleString('zh-TW')} 核銷` : '請至漁光窯烤任一門市出示此碼核銷'}
+              ${r.used ? `✓ 已於 ${new Date(r.usedAt).toLocaleString('zh-TW')} 核銷` : '請至魚光窯烤任一門市出示此碼核銷'}
             </div>
           </div>
         `;
@@ -618,7 +618,7 @@ function showRedeemModal(tier, code) {
     <div class="modal">
       <div class="modal-icon">${tier.icon}</div>
       <div class="modal-title">兌換成功</div>
-      <div class="modal-msg">已成功兌換「${tier.name}」<br>請至漁光窯烤門市出示核銷碼</div>
+      <div class="modal-msg">已成功兌換「${tier.name}」<br>請至魚光窯烤門市出示核銷碼</div>
       <div class="modal-code">${code}</div>
       <button class="btn btn-primary" id="modalClose">完成</button>
     </div>

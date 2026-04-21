@@ -61,10 +61,10 @@ const LOCATIONS = [
     verifyMethod: 'qr', qrHint: '請掃描民宿櫃檯的入住打卡 QR Code' },
 
   // 餐廳類（QR 掃碼）
-  { id: 'REST-YGPL', name: '漁光窯烤・埔里店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
+  { id: 'REST-YGPL', name: '魚光窯烤・埔里店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
     addr: '南投縣埔里鎮中山路一段',            lat: 23.9653, lng: 120.9689,
     verifyMethod: 'qr', qrHint: '請掃描門市結帳台的 QR Code' },
-  { id: 'REST-YGYC', name: '漁光窯烤・魚池店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
+  { id: 'REST-YGYC', name: '魚光窯烤・魚池店',     category: 'restaurant',    points: 2, co2: 1.0, icon: '🥖',
     addr: '南投縣魚池鄉中山路 318 號',         lat: 23.8967, lng: 120.9453,
     verifyMethod: 'qr', qrHint: '請掃描門市結帳台的 QR Code' },
   { id: 'REST-YM',   name: '遊牧咖啡',             category: 'restaurant',    points: 1, co2: 0.8, icon: '☕',
