@@ -1,0 +1,819 @@
+/* ============================================
+   日月潭低碳麵包集點・LINE LIFF 樣式
+   LINE 官方綠：#06C755 | #00B900
+   ============================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --line-green: #06C755;
+  --line-green-dark: #05a847;
+  --bakery: #d4a574;
+  --experience: #4ec2c2;
+  --restaurant: #e89b5b;
+  --accommodation: #7b9acc;
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --text: #222;
+  --text-light: #888;
+  --border: #eee;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+html, body {
+  font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Header ===== */
+.app-header {
+  background: linear-gradient(135deg, var(--line-green) 0%, var(--line-green-dark) 100%);
+  color: #fff;
+  padding: 20px 18px 24px;
+  position: sticky; top: 0; z-index: 10;
+  box-shadow: 0 2px 12px rgba(6,199,85,0.25);
+}
+
+.app-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.app-header .subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+/* ===== 進度卡片 ===== */
+.progress-card {
+  background: var(--card);
+  margin: -14px 16px 0;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 14px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--line-green);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.progress-bar {
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--line-green), #22d37f);
+  border-radius: 5px;
+  transition: width 0.5s;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  background: var(--card);
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  padding: 14px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-light);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.tab.active {
+  color: var(--line-green);
+  border-bottom-color: var(--line-green);
+  font-weight: 700;
+}
+
+/* ===== Content ===== */
+.content {
+  padding: 16px;
+  padding-bottom: 80px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 8px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: var(--line-green);
+  border-radius: 2px;
+}
+
+/* ===== 地點卡片 ===== */
+.location-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s;
+}
+
+.location-card:active {
+  transform: scale(0.98);
+}
+
+.location-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.location-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.location-addr {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.location-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  background: #fff5e6;
+  color: #d4a574;
+}
+
+.badge.points { background: #e6f9ec; color: var(--line-green); }
+.badge.co2 { background: #f0f7ff; color: #5a8fcc; }
+.badge.photo { background: #fef3c7; color: #92400e; }
+
+.location-status {
+  font-size: 20px;
+}
+
+.location-card.checked .location-name::after {
+  content: ' ✓';
+  color: var(--line-green);
+}
+
+.location-card.checked { opacity: 0.65; }
+
+/* ===== 類別 chip ===== */
+.category-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+/* ===== 兌換卡片 ===== */
+.reward-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-card.locked::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(1px);
+}
+
+.reward-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.reward-icon { font-size: 40px; }
+
+.reward-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.reward-desc {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+.reward-points {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--line-green);
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--line-green);
+  color: #fff;
+}
+
+.btn-primary:active {
+  background: var(--line-green-dark);
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: #fff;
+  color: var(--line-green);
+  border: 1.5px solid var(--line-green);
+}
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px 32px;
+  animation: slideUp 0.3s;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.modal-msg {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.modal-code {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--line-green);
+  letter-spacing: 4px;
+  background: #f0fdf4;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-family: 'Menlo', monospace;
+}
+
+/* ===== 空狀態 ===== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+.empty-state .icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+/* ===== 底部 reset ===== */
+.reset-link {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+/* ============================================
+   類別篩選 Chips
+   ============================================ */
+.cat-filter {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  margin-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.cat-filter::-webkit-scrollbar { display: none; }
+.cat-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #555;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.cat-chip.active {
+  background: var(--line-green);
+  color: #fff;
+  border-color: var(--line-green);
+  font-weight: 700;
+}
+
+/* ============================================
+   綠色地圖（Leaflet）
+   ============================================ */
+.map-wrap {
+  margin: -8px -4px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.green-map {
+  height: calc(100vh - 340px);
+  min-height: 400px;
+  width: 100%;
+  background: #e5e7eb;
+}
+.map-legend {
+  background: #fff;
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 11px;
+  color: #555;
+  border-top: 1px solid #f0f0f0;
+}
+.legend-item { display: inline-flex; align-items: center; gap: 4px; }
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* 自訂地圖 marker */
+.map-marker-inner {
+  width: 36px; height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  border: 2px solid #fff;
+  position: relative;
+}
+.map-marker-inner > * { transform: rotate(45deg); font-size: 18px; }
+
+/* Leaflet 彈窗樣式覆寫 */
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  padding: 4px;
+}
+.leaflet-popup-content { margin: 10px; }
+
+/* ============================================
+   拍照打卡 Modal（AI 影像辨識）
+   ============================================ */
+.photo-modal {
+  max-width: 440px;
+  padding: 0 !important;
+  text-align: left !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-modal-header {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.photo-loc-icon {
+  font-size: 38px;
+  background: #fff;
+  width: 54px; height: 54px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-loc-name { font-size: 16px; font-weight: 700; color: #222; }
+.photo-loc-addr { font-size: 12px; color: #666; margin-top: 2px; }
+
+.modal-close-x {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 30px; height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  font-family: inherit;
+}
+
+.photo-stage { padding: 20px; }
+
+/* --- Step 1: 提示 --- */
+.photo-hint-card {
+  background: #f9fafb;
+  border: 2px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.photo-hint-icon { font-size: 42px; margin-bottom: 6px; }
+.photo-hint-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.photo-hint-text { font-size: 13px; color: #666; line-height: 1.6; }
+
+.photo-rewards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.photo-reward-item {
+  background: #f0fdf4;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+.pr-label { font-size: 11px; color: #666; }
+.pr-value { font-size: 16px; font-weight: 700; color: #06C755; margin-top: 2px; }
+
+.photo-upload-btn {
+  display: block;
+  background: #06C755;
+  color: #fff;
+  padding: 14px;
+  border-radius: 24px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.photo-upload-btn:active { background: #05a847; }
+
+.photo-upload-tip {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  margin-top: 10px;
+  padding: 8px;
+  background: #fefce8;
+  border-radius: 6px;
+  line-height: 1.5;
+}
+
+/* --- Step 2: 辨識中 --- */
+.photo-preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  background: #eee;
+}
+
+.ai-progress {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.ai-dot {
+  width: 10px; height: 10px;
+  background: #06C755;
+  border-radius: 50%;
+  animation: aiBounce 1.4s ease-in-out infinite;
+}
+.ai-dot:nth-child(2) { animation-delay: 0.16s; }
+.ai-dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes aiBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.ai-status-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+  color: #06C755;
+}
+.ai-status-sub {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.ai-tech-note {
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+/* --- Step 3: 結果 --- */
+.result-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.result-badge.success { background: #d1fae5; color: #065f46; }
+.result-badge.fail { background: #fee2e2; color: #991b1b; }
+
+.result-location {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #222;
+}
+.result-confidence {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 14px;
+}
+.result-confidence strong {
+  color: #06C755;
+  font-size: 18px;
+}
+
+.result-detected {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.rd-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+.rd-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.rd-tag {
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.result-points {
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.rp-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.rp-line strong { color: #06C755; font-size: 15px; }
+
+/* ===== Scan 頁面 ===== */
+.scan-container {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.scan-location-big {
+  font-size: 80px;
+  margin: 20px 0;
+}
+
+.scan-details {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.scan-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.scan-row:last-child { border-bottom: none; }
+
+/* ===== 遊程進行中橫幅 ===== */
+.tour-active {
+  background: linear-gradient(90deg, #fff7ed, #ffedd5);
+  margin: 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.tour-badge {
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tour-active-name { flex: 1; font-weight: 600; color: #78350f; }
+.tour-active-stat { color: #ea580c; font-weight: 700; }
+
+/* 遊程涵蓋點標籤 */
+.badge.tour-tag {
+  background: #fef3c7;
+  color: #ea580c;
+  font-weight: 700;
+}
+.location-card.in-tour {
+  border-left: 3px solid #f59e0b;
+  padding-left: 11px;
+}
+
+/* ===== 歡迎頁 ===== */
+.welcome { min-height: 100vh; background: #fff; }
+.welcome-hero {
+  background: linear-gradient(135deg, #06C755 0%, #05a847 100%);
+  color: #fff;
+  padding: 50px 24px 40px;
+  text-align: center;
+}
+.welcome-emoji { font-size: 70px; margin-bottom: 10px; }
+.welcome-hero h1 { font-size: 24px; line-height: 1.4; margin-bottom: 8px; }
+.welcome-hero p { font-size: 13px; opacity: 0.9; }
+
+.welcome-steps {
+  padding: 30px 20px 20px;
+}
+.welcome-step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.ws-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #06C755;
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ws-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.ws-desc { font-size: 12px; color: #888; line-height: 1.5; }
+
+.welcome-actions {
+  padding: 10px 20px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.welcome-actions a.btn { text-decoration: none; text-align: center; display: block; }
+
+/* ===== 店家 QR 產生器 ===== */
+.merchant-container {
+  padding: 20px;
+}
+
+.merchant-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.qr-wrap {
+  text-align: center;
+  padding: 16px;
+  background: #fff;
+}
+
+.qr-url {
+  font-size: 11px;
+  color: var(--text-light);
+  word-break: break-all;
+  margin-top: 8px;
+  padding: 6px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}

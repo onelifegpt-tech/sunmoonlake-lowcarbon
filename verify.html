@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>店家核銷後台 | 低碳麵包集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { max-width: 560px; }
+    .verify-header {
+      background: linear-gradient(135deg, #d4a574, #b88a5a);
+      color: #fff;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .verify-header h1 { font-size: 18px; }
+    .verify-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+
+    .input-section {
+      background: #fff;
+      margin: 16px;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .input-section label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .code-input {
+      width: 100%;
+      padding: 16px;
+      font-size: 22px;
+      font-family: 'Menlo', monospace;
+      letter-spacing: 3px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .code-input:focus { border-color: #06C755; outline: none; }
+
+    .result {
+      margin: 16px;
+      padding: 24px 20px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .result.success { background: #f0fdf4; border: 2px solid #06C755; }
+    .result.error { background: #fef2f2; border: 2px solid #ef4444; }
+    .result.used { background: #fef3c7; border: 2px solid #f59e0b; }
+
+    .result-icon { font-size: 60px; margin-bottom: 12px; }
+    .result-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .result-msg { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+
+    .result-details {
+      background: #fff;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row .k { color: #888; }
+    .detail-row .v { font-weight: 600; }
+
+    .stats-card {
+      background: #fff;
+      margin: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .stats-cell { text-align: center; padding: 8px; }
+    .stats-cell .v { font-size: 24px; font-weight: 700; color: #d4a574; }
+    .stats-cell .l { font-size: 11px; color: #888; margin-top: 2px; }
+
+    .recent-list { margin-top: 16px; }
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-item .icon { font-size: 20px; }
+    .recent-item .info { flex: 1; }
+    .recent-item .time { font-size: 11px; color: #999; }
+    .recent-item .status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .recent-item .status.used { background: #fef3c7; color: #92400e; }
+    .recent-item .status.valid { background: #d1fae5; color: #065f46; }
+  </style>
+</head>
+<body>
+  <div class="verify-header">
+    <h1>🥖 漁光窯烤・核銷後台</h1>
+    <p>請輸入客人出示的 6 位核銷碼（格式：BR+6位數字）</p>
+  </div>
+
+  <div class="input-section">
+    <label>兌換核銷碼</label>
+    <input type="text" id="codeInput" class="code-input" placeholder="BR000000" maxlength="8" autocomplete="off">
+    <button class="btn btn-primary" style="margin-top:12px" id="verifyBtn">驗證核銷碼</button>
+  </div>
+
+  <div id="resultArea"></div>
+
+  <div class="stats-card">
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#666">📊 本店核銷統計</div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="recent-list" id="recentList"></div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    const input = document.getElementById('codeInput');
+    const btn = document.getElementById('verifyBtn');
+    const resultArea = document.getElementById('resultArea');
+
+    function renderStats() {
+      const raw = localStorage.getItem('bread_points_v1');
+      if (!raw) {
+        document.getElementById('statsRow').innerHTML = `
+          <div class="stats-cell"><div class="v">0</div><div class="l">今日核銷</div></div>
+          <div class="stats-cell"><div class="v">0</div><div class="l">累積兌換</div></div>
+          <div class="stats-cell"><div class="v">0</div><div class="l">待使用</div></div>
+        `;
+        return;
+      }
+      const state = JSON.parse(raw);
+      const redeemed = state.redeemed || [];
+      const today = new Date().toDateString();
+      const todayUsed = redeemed.filter(r => r.used && new Date(r.usedAt).toDateString() === today).length;
+      const total = redeemed.length;
+      const pending = redeemed.filter(r => !r.used).length;
+
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stats-cell"><div class="v">${todayUsed}</div><div class="l">今日核銷</div></div>
+        <div class="stats-cell"><div class="v">${total}</div><div class="l">累積兌換</div></div>
+        <div class="stats-cell"><div class="v">${pending}</div><div class="l">待使用</div></div>
+      `;
+
+      const sorted = [...redeemed].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+      document.getElementById('recentList').innerHTML = sorted.length ? sorted.map(r => {
+        const tier = TIERS.find(t => t.id === r.tierId);
+        return `
+          <div class="recent-item">
+            <div class="icon">${tier.icon}</div>
+            <div class="info">
+              <div><strong>${r.code}</strong> ・ ${tier.name}</div>
+              <div class="time">${new Date(r.timestamp).toLocaleString('zh-TW')}</div>
+            </div>
+            <span class="status ${r.used ? 'used' : 'valid'}">${r.used ? '已核銷' : '有效'}</span>
+          </div>
+        `;
+      }).join('') : '<div style="text-align:center;color:#aaa;padding:20px;font-size:12px">尚無兌換紀錄</div>';
+    }
+
+    function verify() {
+      const code = input.value.trim().toUpperCase();
+      if (!code) {
+        resultArea.innerHTML = '';
+        return;
+      }
+
+      const result = DB.verifyCode(code);
+
+      if (!result.ok && !result.record) {
+        resultArea.innerHTML = `
+          <div class="result error">
+            <div class="result-icon">❌</div>
+            <div class="result-title">核銷碼無效</div>
+            <div class="result-msg">${result.msg}<br>請確認客人輸入的兌換碼</div>
+          </div>
+        `;
+        return;
+      }
+
+      if (!result.ok && result.record) {
+        const tier = TIERS.find(t => t.id === result.record.tierId);
+        resultArea.innerHTML = `
+          <div class="result used">
+            <div class="result-icon">⚠️</div>
+            <div class="result-title">此碼已使用</div>
+            <div class="result-msg">${result.msg}</div>
+            <div class="result-details">
+              <div class="detail-row"><span class="k">獎勵</span><span class="v">${tier.icon} ${tier.name}</span></div>
+              <div class="detail-row"><span class="k">兌換時間</span><span class="v">${new Date(result.record.timestamp).toLocaleString('zh-TW')}</span></div>
+              <div class="detail-row"><span class="k">核銷時間</span><span class="v">${new Date(result.record.usedAt).toLocaleString('zh-TW')}</span></div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const { record, tier, state } = result;
+      const { earned } = DB.getBalance(state);
+      const co2 = DB.getCO2(state);
+
+      resultArea.innerHTML = `
+        <div class="result success">
+          <div class="result-icon">${tier.icon}</div>
+          <div class="result-title">核銷碼有效・請發放麵包</div>
+          <div class="result-msg">客人已完成日月潭低碳旅程</div>
+          <div class="result-details">
+            <div class="detail-row"><span class="k">獎勵款式</span><span class="v">${tier.name}</span></div>
+            <div class="detail-row"><span class="k">兌換點數</span><span class="v">${tier.points} 點</span></div>
+            <div class="detail-row"><span class="k">累積減碳</span><span class="v">${co2.toFixed(1)} kg CO₂e</span></div>
+            <div class="detail-row"><span class="k">打卡次數</span><span class="v">${state.checkIns.length} 次</span></div>
+            <div class="detail-row"><span class="k">旅人 ID</span><span class="v">${state.userId}</span></div>
+            <div class="detail-row"><span class="k">兌換時間</span><span class="v">${new Date(record.timestamp).toLocaleString('zh-TW')}</span></div>
+          </div>
+          <button class="btn btn-primary" id="confirmBtn">✓ 確認發放・完成核銷</button>
+        </div>
+      `;
+
+      document.getElementById('confirmBtn').onclick = () => {
+        if (DB.markUsed(code)) {
+          resultArea.innerHTML = `
+            <div class="result success">
+              <div class="result-icon">🎉</div>
+              <div class="result-title">核銷完成</div>
+              <div class="result-msg">已記錄此筆核銷<br>感謝客人的低碳旅程</div>
+            </div>
+          `;
+          input.value = '';
+          renderStats();
+          setTimeout(() => { resultArea.innerHTML = ''; input.focus(); }, 2500);
+        }
+      };
+    }
+
+    btn.onclick = verify;
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') verify();
+    });
+    input.addEventListener('input', () => {
+      input.value = input.value.toUpperCase();
+    });
+
+    renderStats();
+  </script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>營運儀表板 | 日月潭低碳遊程</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { max-width: 1100px; background: #f0f2f5; }
+
+    .dash-header {
+      background: linear-gradient(135deg, #1a2332, #2d3e52);
+      color: #fff;
+      padding: 24px 28px;
+    }
+    .dash-header h1 { font-size: 20px; margin-bottom: 4px; }
+    .dash-header p { font-size: 12px; opacity: 0.7; }
+    .dash-tag {
+      display: inline-block; background: #06C755;
+      padding: 3px 10px; border-radius: 10px;
+      font-size: 11px; font-weight: 600; margin-top: 6px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      padding: 18px;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .kpi-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .kpi-value { font-size: 28px; font-weight: 800; color: #222; }
+    .kpi-unit { font-size: 12px; color: #888; margin-left: 4px; }
+    .kpi-progress {
+      height: 6px; background: #f0f0f0; border-radius: 3px;
+      margin-top: 10px; overflow: hidden;
+    }
+    .kpi-progress > div { height: 100%; background: #06C755; transition: width 0.5s; }
+    .kpi-progress-text { font-size: 11px; color: #888; margin-top: 4px; }
+
+    .kpi-card.warn .kpi-value { color: #f59e0b; }
+    .kpi-card.good .kpi-value { color: #06C755; }
+
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 0 18px 18px;
+    }
+    @media (max-width: 720px) { .panels { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .panel h3 { font-size: 14px; margin-bottom: 14px; color: #222; }
+
+    .bar-chart { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .bar-label { width: 120px; color: #555; }
+    .bar-track { flex: 1; height: 22px; background: #f5f5f5; border-radius: 4px; position: relative; overflow: hidden; }
+    .bar-fill {
+      height: 100%; display: flex; align-items: center; padding: 0 8px;
+      color: #fff; font-weight: 700; font-size: 11px;
+      border-radius: 4px; transition: width 0.5s;
+    }
+
+    .activity-log { max-height: 300px; overflow-y: auto; }
+    .log-item {
+      display: flex; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0; font-size: 12px;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-time { color: #aaa; min-width: 70px; }
+    .log-icon { font-size: 16px; }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      padding: 0 18px 24px;
+    }
+    .quick-link {
+      background: #fff;
+      padding: 16px;
+      border-radius: 10px;
+      text-align: center;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: transform 0.15s;
+    }
+    .quick-link:hover { transform: translateY(-2px); }
+    .quick-link .icon { font-size: 28px; margin-bottom: 6px; }
+    .quick-link .name { font-size: 13px; font-weight: 600; }
+    .quick-link .desc { font-size: 10px; color: #888; margin-top: 2px; }
+
+    .target-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px;
+    }
+    .target-row:last-child { border-bottom: none; }
+    .target-label { color: #555; }
+    .target-progress {
+      font-weight: 700; color: #06C755;
+    }
+    .target-ratio { color: #aaa; font-size: 10px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+  <div class="dash-header">
+    <h1>📊 日月潭低碳遊程・營運儀表板</h1>
+    <p>Sun Moon Lake Low-Carbon Tourism Platform｜由 日月潭戶外運動專家有限公司 營運</p>
+    <span class="dash-tag">南投縣 115 年度地方型 SBIR 對應平台</span>
+  </div>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="panels">
+    <div class="panel">
+      <h3>📍 各地點打卡次數</h3>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+    <div class="panel">
+      <h3>🎯 SBIR 計畫 KPI 達成率</h3>
+      <div id="targetList"></div>
+    </div>
+    <div class="panel">
+      <h3>🥖 兌換券狀態</h3>
+      <div id="redeemStatus"></div>
+    </div>
+    <div class="panel">
+      <h3>🕒 最近動態</h3>
+      <div class="activity-log" id="activityLog"></div>
+    </div>
+  </div>
+
+  <div style="padding: 0 18px 12px; font-size: 14px; font-weight: 600; color: #555;">⚡ 快速連結</div>
+  <div class="quick-links">
+    <a href="tours.html" class="quick-link">
+      <div class="icon">🌿</div>
+      <div class="name">遊程選擇</div>
+      <div class="desc">遊客啟程入口</div>
+    </a>
+    <a href="index.html" class="quick-link">
+      <div class="icon">📱</div>
+      <div class="name">遊客 LIFF</div>
+      <div class="desc">打卡集點主介面</div>
+    </a>
+    <a href="merchant.html" class="quick-link">
+      <div class="icon">🖨️</div>
+      <div class="name">QR 產生器</div>
+      <div class="desc">合作店家 QR 批次列印</div>
+    </a>
+    <a href="verify.html" class="quick-link">
+      <div class="icon">✅</div>
+      <div class="name">店家核銷</div>
+      <div class="desc">漁光窯烤收碼介面</div>
+    </a>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    // SBIR 計畫目標值（第一年）
+    const SBIR_TARGETS = {
+      members:        { label: 'LINE 會員數',      target: 5000, unit: '人' },
+      journeys:       { label: '完成旅程人次',    target: 3000, unit: '人' },
+      partners:       { label: '合作業者',        target: 15,   unit: '家' },
+      breads:         { label: '兌換麵包',        target: 1500, unit: '顆' },
+      co2:            { label: '驗證減碳量',      target: 5000, unit: 'kg CO₂e' },
+      revenue:        { label: '遊程營收',        target: 12000000, unit: 'NT$' }
+    };
+
+    function load() {
+      const raw = localStorage.getItem('bread_points_v1');
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function renderKPI() {
+      const state = load();
+      const checkIns = state?.checkIns || [];
+      const redeemed = state?.redeemed || [];
+      const earned = checkIns.reduce((s, c) => s + c.points, 0);
+      const co2 = checkIns.reduce((s, c) => s + c.co2, 0);
+      const usedCount = redeemed.filter(r => r.used).length;
+      const revenue = redeemed.length * 4000; // 推估客單 4,000
+
+      const kpis = [
+        { label: '累積會員', value: state ? 1 : 0, unit: '人', target: 5000 },
+        { label: '完成旅程', value: usedCount, unit: '人次', target: 3000 },
+        { label: '合作業者', value: LOCATIONS.length, unit: '家', target: 15, good: true },
+        { label: '已兌換麵包', value: redeemed.length, unit: '顆', target: 1500 },
+        { label: '驗證減碳', value: co2.toFixed(1), unit: 'kg', target: 5000 },
+        { label: '預估營收', value: revenue.toLocaleString(), unit: 'NT$', target: '12M' }
+      ];
+
+      document.getElementById('kpiGrid').innerHTML = kpis.map(k => {
+        const numeric = typeof k.target === 'number' ? k.target : 12000000;
+        const curr = parseFloat(String(k.value).replace(/,/g, '')) || 0;
+        const pct = Math.min(100, (curr / numeric) * 100).toFixed(1);
+        return `
+          <div class="kpi-card ${k.good ? 'good' : ''}">
+            <div class="kpi-label">${k.label}</div>
+            <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
+            <div class="kpi-progress"><div style="width:${pct}%"></div></div>
+            <div class="kpi-progress-text">SBIR 目標：${typeof k.target === 'number' ? k.target.toLocaleString() : k.target} ${k.unit}（${pct}%）</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBarChart() {
+      const state = load();
+      const checkIns = state?.checkIns || [];
+      const counts = {};
+      LOCATIONS.forEach(l => counts[l.id] = 0);
+      checkIns.forEach(c => counts[c.locationId] = (counts[c.locationId] || 0) + 1);
+
+      const sorted = LOCATIONS.map(l => ({ ...l, count: counts[l.id] }))
+        .sort((a, b) => b.count - a.count);
+      const max = Math.max(...sorted.map(s => s.count), 1);
+
+      document.getElementById('barChart').innerHTML = sorted.slice(0, 10).map(l => {
+        const cat = CATEGORIES[l.category];
+        const w = (l.count / max) * 100;
+        return `
+          <div class="bar-row">
+            <div class="bar-label">${l.icon} ${l.name}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${w}%;background:${cat.color}">${l.count > 0 ? l.count : ''}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTargets() {
+      const state = load();
+      const redeemed = state?.redeemed || [];
+      const co2 = (state?.checkIns || []).reduce((s, c) => s + c.co2, 0);
+
+      const targets = [
+        { label: 'LINE 會員數', curr: state ? 1 : 0, target: 5000 },
+        { label: '完成旅程人次', curr: redeemed.filter(r => r.used).length, target: 3000 },
+        { label: '合作業者數', curr: LOCATIONS.length, target: 15 },
+        { label: '兌換麵包數', curr: redeemed.length, target: 1500 },
+        { label: '減碳量 (kg)', curr: +co2.toFixed(1), target: 5000 }
+      ];
+
+      document.getElementById('targetList').innerHTML = targets.map(t => {
+        const pct = ((t.curr / t.target) * 100).toFixed(1);
+        return `
+          <div class="target-row">
+            <span class="target-label">${t.label}</span>
+            <span>
+              <span class="target-progress">${t.curr}</span>
+              <span class="target-ratio">/ ${t.target.toLocaleString()} (${pct}%)</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRedeemStatus() {
+      const state = load();
+      const redeemed = state?.redeemed || [];
+
+      const byTier = {};
+      TIERS.forEach(t => byTier[t.id] = { total: 0, used: 0, pending: 0 });
+      redeemed.forEach(r => {
+        if (byTier[r.tierId]) {
+          byTier[r.tierId].total++;
+          if (r.used) byTier[r.tierId].used++;
+          else byTier[r.tierId].pending++;
+        }
+      });
+
+      document.getElementById('redeemStatus').innerHTML = TIERS.map(t => {
+        const s = byTier[t.id];
+        return `
+          <div class="target-row">
+            <span class="target-label">${t.icon} ${t.name}</span>
+            <span>
+              <span class="target-progress">${s.total}</span>
+              <span class="target-ratio">已用 ${s.used} ・待用 ${s.pending}</span>
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderActivity() {
+      const state = load();
+      const events = [];
+      (state?.checkIns || []).forEach(c => {
+        const loc = LOCATIONS.find(l => l.id === c.locationId);
+        events.push({ t: c.timestamp, icon: loc?.icon || '📍', text: `於 ${loc?.name} 打卡 +${c.points} 點` });
+      });
+      (state?.redeemed || []).forEach(r => {
+        const tier = TIERS.find(t => t.id === r.tierId);
+        events.push({ t: r.timestamp, icon: tier?.icon || '🎁', text: `兌換 ${tier?.name}（${r.code}）` });
+        if (r.used) {
+          events.push({ t: r.usedAt, icon: '✅', text: `核銷 ${r.code}` });
+        }
+      });
+      events.sort((a, b) => b.t - a.t);
+
+      const log = document.getElementById('activityLog');
+      if (events.length === 0) {
+        log.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:12px">尚無活動・請先至 LIFF 頁面模擬打卡</div>';
+        return;
+      }
+      log.innerHTML = events.slice(0, 30).map(e => `
+        <div class="log-item">
+          <span class="log-icon">${e.icon}</span>
+          <span class="log-time">${new Date(e.t).toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}</span>
+          <span>${e.text}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderKPI();
+      renderBarChart();
+      renderTargets();
+      renderRedeemStatus();
+      renderActivity();
+    }
+
+    renderAll();
+    setInterval(renderAll, 3000); // 每 3 秒自動刷新
+  </script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>後台管理 | 低碳集點平台</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <style>
+    body { max-width: 1200px; background: #f3f4f6; }
+
+    .admin-header {
+      background: linear-gradient(135deg, #1a2332, #2d3e52);
+      color: #fff;
+      padding: 20px 24px;
+    }
+    .admin-header h1 { font-size: 20px; }
+    .admin-header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px;
+    }
+    @media (max-width: 900px) { .admin-layout { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .panel h2 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel h2 .count {
+      font-size: 11px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .loc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .loc-table th {
+      background: #f9fafb;
+      padding: 8px 6px;
+      text-align: left;
+      color: #555;
+      font-weight: 600;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 11px;
+    }
+    .loc-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .loc-table tr:hover { background: #fafbfc; cursor: pointer; }
+    .loc-table tr.selected { background: #ecfdf5; }
+
+    .loc-cat-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-field label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .form-field input:focus { border-color: #06C755; outline: none; }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .form-actions button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .btn-save { background: #06C755; color: #fff; }
+    .btn-delete { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .btn-new { background: #3b82f6; color: #fff; }
+    .btn-reset { background: #f3f4f6; color: #555; border: 1px solid #e5e7eb; }
+
+    .admin-map {
+      height: 360px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .map-note {
+      font-size: 11px;
+      color: #888;
+      padding: 8px;
+      background: #fefce8;
+      border-radius: 6px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .coord-helper {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .coord-helper button {
+      padding: 8px 14px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .toolbar {
+      padding: 10px 16px;
+      background: #fff;
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .toolbar .nav a {
+      color: #06C755;
+      text-decoration: none;
+      font-size: 12px;
+      margin-right: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-header">
+    <h1>🛠️ 低碳集點平台・後台管理</h1>
+    <p>管理合作店家資料、GPS 座標、點數設定 ─ 資料即時同步到綠色地圖</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="nav">
+      <a href="index.html">← 返回遊客端</a>
+      <a href="dashboard.html">📊 營運儀表板</a>
+      <a href="verify.html">✅ 店家核銷</a>
+      <a href="merchant.html">🖨️ QR 產生器</a>
+    </div>
+    <div>
+      <button class="btn-reset" id="resetAllBtn">重設為預設資料</button>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- 左：店家清單 + 編輯表單 -->
+    <div class="panel">
+      <h2>
+        店家資料管理
+        <span class="count" id="locCount"></span>
+      </h2>
+
+      <div class="form-grid full">
+        <button class="btn-new" id="newBtn" style="padding:10px;border:none;border-radius:8px;font-weight:700;cursor:pointer">＋ 新增合作店家</button>
+      </div>
+
+      <table class="loc-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>店家名稱</th>
+            <th>類別</th>
+            <th>點數</th>
+            <th>座標</th>
+          </tr>
+        </thead>
+        <tbody id="locTbody"></tbody>
+      </table>
+
+      <hr style="margin:20px 0;border:0;border-top:1px solid #f0f0f0">
+
+      <h2 id="editTitle">編輯店家資料</h2>
+      <form id="editForm" style="display:none">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>ID（不可重複）</label>
+            <input name="id" required pattern="[A-Z0-9-]+" placeholder="如 LAND-XS">
+          </div>
+          <div class="form-field">
+            <label>圖示 Emoji</label>
+            <input name="icon" required placeholder="🏛️">
+          </div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>店家名稱</label>
+            <input name="name" required placeholder="向山遊客中心">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>類別</label>
+            <select name="category" required>
+              <option value="experience">體驗型</option>
+              <option value="accommodation">旅宿業</option>
+              <option value="restaurant">餐廳類</option>
+              <option value="landmark">景點類</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>點數</label>
+            <input name="points" type="number" required min="1" max="10" value="2">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>減碳貢獻 (kg CO₂)</label>
+            <input name="co2" type="number" required min="0" step="0.1" value="1.0">
+          </div>
+          <div class="form-field">
+            <label>照片辨識關鍵詞（逗號分隔）</label>
+            <input name="keywords" placeholder="向山,遊客中心,清水模">
+          </div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>地址</label>
+            <input name="addr" required placeholder="南投縣魚池鄉中山路 599 號">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>緯度（Lat）</label>
+            <div class="coord-helper">
+              <input name="lat" type="number" step="0.0001" required placeholder="23.8466">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>經度（Lng）</label>
+            <div class="coord-helper">
+              <input name="lng" type="number" step="0.0001" required placeholder="120.9082">
+              <button type="button" id="openGMaps">🔗 Google Maps 搜尋</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>拍照提示（給遊客看）</label>
+            <textarea name="photoHint" rows="2" placeholder="請拍攝清水模建築與開放式廊道"></textarea>
+          </div>
+        </div>
+
+        <div class="map-note">
+          💡 <strong>座標取得方式：</strong>1) 在下方地圖上點擊直接選取　2) 開啟 Google Maps 搜尋地址後，右鍵點擊位置即可複製座標
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-save">💾 儲存</button>
+          <button type="button" class="btn-delete" id="deleteBtn">🗑 刪除</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 右：地圖（點擊取座標 / 預覽） -->
+    <div class="panel">
+      <h2>
+        地圖位置預覽
+        <span class="count">點擊地圖可取得座標</span>
+      </h2>
+      <div id="adminMap" class="admin-map"></div>
+      <div class="map-note">
+        🗺️ 這張地圖和遊客端的「綠色地圖」同步，新增/編輯的點會即時顯示。<br>
+        📌 左邊表格選取某筆資料後，在地圖上點擊即可將該點位置更新為新座標。
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    let locations = [...getActiveLocations()];
+    let selectedId = null;
+    let mode = 'edit'; // 'edit' | 'new'
+    let adminMap, markersLayer;
+
+    // ===== 初始化地圖 =====
+    function initMap() {
+      adminMap = L.map('adminMap').setView([23.865, 120.915], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© OpenStreetMap'
+      }).addTo(adminMap);
+      markersLayer = L.layerGroup().addTo(adminMap);
+
+      adminMap.on('click', (e) => {
+        if (!selectedId && mode !== 'new') return;
+        document.querySelector('input[name="lat"]').value = e.latlng.lat.toFixed(4);
+        document.querySelector('input[name="lng"]').value = e.latlng.lng.toFixed(4);
+        renderMarkers();
+      });
+
+      renderMarkers();
+    }
+
+    function renderMarkers() {
+      if (!markersLayer) return;
+      markersLayer.clearLayers();
+      locations.forEach(l => {
+        if (!l.lat || !l.lng) return;
+        const cat = CATEGORIES[l.category];
+        const isSelected = l.id === selectedId;
+        const icon = L.divIcon({
+          className: 'map-marker',
+          html: `<div class="map-marker-inner" style="background:${cat.color};${isSelected ? 'box-shadow:0 0 0 4px #06C75588;transform:rotate(-45deg) scale(1.2)' : ''}">${l.icon}</div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+        L.marker([l.lat, l.lng], { icon })
+          .bindPopup(`<strong>${l.icon} ${l.name}</strong><br>${l.addr}`)
+          .addTo(markersLayer);
+      });
+    }
+
+    // ===== 清單 =====
+    function renderList() {
+      document.getElementById('locCount').textContent = `共 ${locations.length} 個合作點`;
+      document.getElementById('locTbody').innerHTML = locations.map(l => {
+        const cat = CATEGORIES[l.category];
+        return `
+          <tr data-id="${l.id}" class="${l.id === selectedId ? 'selected' : ''}">
+            <td style="font-family:monospace;font-size:11px;color:#666">${l.id}</td>
+            <td><strong>${l.icon} ${l.name}</strong></td>
+            <td><span class="loc-cat-pill" style="background:${cat.color}">${cat.label}</span></td>
+            <td>+${l.points}</td>
+            <td style="font-size:10px;color:#666">${l.lat?.toFixed(3)}, ${l.lng?.toFixed(3)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.loc-table tbody tr').forEach(tr => {
+        tr.onclick = () => selectLocation(tr.dataset.id);
+      });
+    }
+
+    // ===== 編輯 =====
+    function selectLocation(id) {
+      selectedId = id;
+      mode = 'edit';
+      const loc = locations.find(l => l.id === id);
+      if (!loc) return;
+      const form = document.getElementById('editForm');
+      form.style.display = 'block';
+      document.getElementById('editTitle').textContent = `編輯：${loc.name}`;
+      form.id.value = loc.id;
+      form.id.readOnly = true;
+      form.icon.value = loc.icon;
+      form.name.value = loc.name;
+      form.category.value = loc.category;
+      form.points.value = loc.points;
+      form.co2.value = loc.co2;
+      form.keywords.value = (loc.keywords || []).join(',');
+      form.addr.value = loc.addr;
+      form.lat.value = loc.lat || '';
+      form.lng.value = loc.lng || '';
+      form.photoHint.value = loc.photoHint || '';
+
+      renderList();
+      renderMarkers();
+      if (loc.lat && loc.lng) adminMap.setView([loc.lat, loc.lng], 15);
+    }
+
+    function newLocation() {
+      selectedId = null;
+      mode = 'new';
+      const form = document.getElementById('editForm');
+      form.style.display = 'block';
+      form.reset();
+      form.id.readOnly = false;
+      document.getElementById('editTitle').textContent = '新增合作店家';
+      form.id.focus();
+    }
+
+    // ===== 表單 =====
+    document.getElementById('editForm').onsubmit = (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        id: form.id.value.trim().toUpperCase(),
+        name: form.name.value.trim(),
+        category: form.category.value,
+        points: parseInt(form.points.value),
+        co2: parseFloat(form.co2.value),
+        icon: form.icon.value.trim(),
+        addr: form.addr.value.trim(),
+        lat: parseFloat(form.lat.value),
+        lng: parseFloat(form.lng.value),
+        verifyMethod: 'photo',
+        photoHint: form.photoHint.value.trim(),
+        keywords: form.keywords.value.split(',').map(s => s.trim()).filter(Boolean)
+      };
+
+      if (mode === 'new') {
+        if (locations.some(l => l.id === data.id)) {
+          alert('此 ID 已存在，請改用其他 ID');
+          return;
+        }
+        locations.push(data);
+      } else {
+        const idx = locations.findIndex(l => l.id === selectedId);
+        if (idx === -1) return;
+        locations[idx] = data;
+      }
+
+      saveLocationsOverride(locations);
+      selectedId = data.id;
+      mode = 'edit';
+      renderList();
+      renderMarkers();
+      alert('✓ 已儲存');
+    };
+
+    document.getElementById('deleteBtn').onclick = () => {
+      if (mode !== 'edit' || !selectedId) return;
+      if (!confirm('確定要刪除此店家嗎？')) return;
+      locations = locations.filter(l => l.id !== selectedId);
+      saveLocationsOverride(locations);
+      selectedId = null;
+      document.getElementById('editForm').style.display = 'none';
+      renderList();
+      renderMarkers();
+    };
+
+    document.getElementById('newBtn').onclick = newLocation;
+
+    document.getElementById('resetAllBtn').onclick = () => {
+      if (!confirm('這會清除所有後台編輯，恢復預設 16 個合作點。確定嗎？')) return;
+      resetLocationsOverride();
+      locations = [...getActiveLocations()];
+      selectedId = null;
+      document.getElementById('editForm').style.display = 'none';
+      renderList();
+      renderMarkers();
+    };
+
+    document.getElementById('openGMaps').onclick = () => {
+      const addr = document.querySelector('input[name="addr"]').value;
+      if (!addr) {
+        alert('請先填入地址');
+        return;
+      }
+      window.open(`https://www.google.com/maps/search/${encodeURIComponent(addr)}`, '_blank');
+    };
+
+    // 啟動
+    initMap();
+    renderList();
+  </script>
+</body>
+</html>

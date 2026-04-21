@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>店家 QR 產生器 | 低碳麵包集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    body { max-width: 720px; background: #fafafa; }
+    .merchant-header {
+      background: linear-gradient(135deg, #06C755, #05a847);
+      color: #fff; padding: 20px; text-align: center;
+    }
+    .merchant-header h1 { font-size: 20px; }
+    .merchant-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+    .qr-card {
+      background: #fff; border-radius: 12px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .qr-card h3 { font-size: 15px; margin-bottom: 4px; }
+    .qr-card .addr { font-size: 11px; color: #888; margin-bottom: 10px; }
+    .qr-card canvas { margin: 10px auto; display: block; }
+    .qr-badges { display: flex; justify-content: center; gap: 6px; margin: 8px 0; }
+    .qr-id {
+      font-family: monospace; font-size: 11px;
+      color: #888; margin-top: 6px;
+      padding: 4px 8px; background: #f5f5f5; border-radius: 4px;
+      display: inline-block;
+    }
+    .filter-bar {
+      padding: 12px 16px; background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex; gap: 8px; overflow-x: auto;
+    }
+    .filter-btn {
+      padding: 6px 14px; border: 1px solid #ddd; background: #fff;
+      border-radius: 16px; font-size: 12px; cursor: pointer;
+      white-space: nowrap; font-family: inherit;
+    }
+    .filter-btn.active { background: #06C755; color: #fff; border-color: #06C755; }
+    .print-btn {
+      position: fixed; bottom: 20px; right: 20px;
+      background: #06C755; color: #fff; border: none;
+      padding: 14px 20px; border-radius: 30px; font-size: 14px;
+      font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(6,199,85,0.4);
+    }
+    @media print {
+      .merchant-header, .filter-bar, .print-btn { display: none; }
+      body { background: #fff; max-width: 100%; }
+      .qr-grid { grid-template-columns: repeat(3, 1fr); }
+      .qr-card { box-shadow: none; border: 1px dashed #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="merchant-header">
+    <h1>🖨️ 店家 QR Code 產生器</h1>
+    <p>將 QR 印出貼在合作店家，遊客掃描即打卡獲得點數</p>
+  </div>
+
+  <div class="filter-bar" id="filterBar"></div>
+
+  <div class="qr-grid" id="qrGrid"></div>
+
+  <button class="print-btn" onclick="window.print()">🖨️ 列印全部</button>
+
+  <script src="assets/data.js"></script>
+  <script>
+    // 打卡網址（部署後改成你的 LIFF URL）
+    const BASE_URL = location.origin + location.pathname.replace('merchant.html', 'index.html');
+
+    let filterCat = 'all';
+
+    function renderFilters() {
+      const cats = [
+        { id: 'all', label: '全部' },
+        ...Object.entries(CATEGORIES).map(([id, c]) => ({ id, label: c.label }))
+      ];
+      document.getElementById('filterBar').innerHTML = cats.map(c => `
+        <button class="filter-btn ${filterCat === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label}</button>
+      `).join('');
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.onclick = () => { filterCat = b.dataset.cat; render(); };
+      });
+    }
+
+    function render() {
+      renderFilters();
+      const locs = filterCat === 'all' ? LOCATIONS : LOCATIONS.filter(l => l.category === filterCat);
+      const grid = document.getElementById('qrGrid');
+      grid.innerHTML = locs.map(l => {
+        const cat = CATEGORIES[l.category];
+        return `
+          <div class="qr-card">
+            <h3>${l.icon} ${l.name}</h3>
+            <div class="addr">📍 ${l.addr}</div>
+            <div class="qr-badges">
+              <span class="badge points">+${l.points} 點</span>
+              <span class="badge co2">減 ${l.co2} kg</span>
+            </div>
+            <canvas id="qr-${l.id}"></canvas>
+            <div class="qr-id">${l.id}</div>
+            <div style="font-size:10px;color:#aaa;margin-top:6px">掃碼打卡累積減碳點數</div>
+          </div>
+        `;
+      }).join('');
+
+      // 繪製 QR
+      locs.forEach(l => {
+        const url = `${BASE_URL}?checkin=${l.id}`;
+        QRCode.toCanvas(document.getElementById(`qr-${l.id}`), url, {
+          width: 180,
+          margin: 1,
+          color: { dark: '#000', light: '#fff' }
+        });
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
