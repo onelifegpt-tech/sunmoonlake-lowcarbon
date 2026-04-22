@@ -282,7 +282,16 @@
         width: 2500, height: 1686, scale: 1, useCORS: true, backgroundColor: '#e8e2d3'
       });
       applyScale();
-      return result.toDataURL('image/png');
+      // LINE Rich Menu 限制 1 MB，用 JPEG 壓縮
+      // 逐次降低品質直到 < 950 KB
+      let quality = 0.92;
+      let dataUrl = result.toDataURL('image/jpeg', quality);
+      while (dataUrl.length > 950 * 1024 * 1.33 /* base64 overhead */ && quality > 0.4) {
+        quality -= 0.08;
+        dataUrl = result.toDataURL('image/jpeg', quality);
+      }
+      console.log('[RichMenu] final quality:', quality, 'size:', Math.round(dataUrl.length / 1024), 'KB');
+      return dataUrl;
     }
 
     document.getElementById('installBtn').onclick = async () => {
