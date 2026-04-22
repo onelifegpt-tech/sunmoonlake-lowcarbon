@@ -142,7 +142,8 @@
     </div>
     <div class="rm-actions">
       <button class="rm-btn alt" id="downloadBtn">💾 下載 PNG 圖</button>
-      <button class="rm-btn" id="copyLinksBtn">📋 複製 Rich Menu 連結清單</button>
+      <button class="rm-btn" id="copyLinksBtn">📋 複製連結清單</button>
+      <button class="rm-btn" id="installBtn" style="background:#f38020">⚡ 一鍵安裝到 LINE@</button>
     </div>
   </div>
 
@@ -227,6 +228,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="assets/api-client.js"></script>
   <script>
     // 預覽縮放
     function applyScale() {
@@ -269,6 +271,58 @@
       applyScale();
       btn.disabled = false;
       btn.textContent = '💾 下載 PNG 圖';
+    };
+
+    // ⚡ 一鍵安裝到 LINE
+    async function generatePng() {
+      const canvas = document.getElementById('rmCanvas');
+      canvas.style.transform = 'scale(1)';
+      document.getElementById('canvasWrap').style.height = '1706px';
+      const result = await html2canvas(canvas, {
+        width: 2500, height: 1686, scale: 1, useCORS: true, backgroundColor: '#e8e2d3'
+      });
+      applyScale();
+      return result.toDataURL('image/png');
+    }
+
+    document.getElementById('installBtn').onclick = async () => {
+      if (!LineApi.isConfigured()) {
+        alert('⚠️ 請先到 admin.html 設定 Worker URL 與 Admin Token');
+        window.open('/admin.html', '_blank');
+        return;
+      }
+
+      const btn = document.getElementById('installBtn');
+      btn.disabled = true;
+      btn.textContent = '🎨 產生圖片中...';
+
+      try {
+        const image = await generatePng();
+        btn.textContent = '📤 上傳 LINE 中...';
+
+        const res = await fetch(LineApi.config().workerUrl.replace(/\/$/, '') + '/api/richmenu/install', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Token': LineApi.config().adminToken
+          },
+          body: JSON.stringify({ image })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          alert(`✅ Rich Menu 安裝成功！\n\nRich Menu ID：${data.richMenuId}\n\n${data.message}\n\n請到手機 LINE 重新開啟官方帳號聊天室查看。`);
+          btn.textContent = '✓ 已安裝 · 重新安裝';
+        } else {
+          alert(`❌ 安裝失敗\n\n步驟：${data.step || '-'}\n錯誤：${JSON.stringify(data.error || data, null, 2)}`);
+          btn.textContent = '⚡ 一鍵安裝到 LINE@';
+        }
+      } catch (e) {
+        alert('❌ 發生錯誤：' + e.message);
+        btn.textContent = '⚡ 一鍵安裝到 LINE@';
+      } finally {
+        btn.disabled = false;
+      }
     };
 
     // 複製連結清單

@@ -241,6 +241,111 @@ async function handleBroadcast(request, env) {
 }
 
 // ============================================
+// Rich Menu 自動安裝
+// POST /api/richmenu/install
+// body: { image: "data:image/png;base64,..." }
+// ============================================
+async function handleRichMenuInstall(request, env) {
+  const auth = requireAdmin(request, env);
+  if (auth) return auth;
+
+  const { image } = await request.json();
+  if (!image) return jsonResponse({ error: 'image (base64 data URL) required' }, 400);
+
+  const accessToken = env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!accessToken) return jsonResponse({ error: 'LINE_CHANNEL_ACCESS_TOKEN not set' }, 500);
+
+  const LIFF = 'https://liff.line.me/2009871603-M3x0m8mJ';
+
+  // Rich Menu 結構（6 格，大版 2500x1686）
+  const richMenuDef = {
+    size: { width: 2500, height: 1686 },
+    selected: true,
+    name: '日月潭低碳集點主選單',
+    chatBarText: '日月潭低碳集點',
+    areas: [
+      // 上排
+      { bounds: { x: 0,    y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '綠色地圖', uri: `${LIFF}?tab=map` } },
+      { bounds: { x: 833,  y: 0,   width: 834, height: 843 }, action: { type: 'uri', label: '集碳行動', uri: `${LIFF}?tab=home` } },
+      { bounds: { x: 1667, y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '最新消息', uri: `${LIFF}?tab=news` } },
+      // 下排
+      { bounds: { x: 0,    y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '我的點數', uri: `${LIFF}?tab=history` } },
+      { bounds: { x: 833,  y: 843, width: 834, height: 843 }, action: { type: 'uri', label: '兌換麵包', uri: `${LIFF}?tab=reward` } },
+      { bounds: { x: 1667, y: 843, width: 833, height: 843 }, action: { type: 'message', label: '真人回覆', text: '真人回覆' } }
+    ]
+  };
+
+  try {
+    // 0. 先清掉舊的 Rich Menu（避免重複）
+    const listRes = await fetch('https://api.line.me/v2/bot/richmenu/list', {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      for (const rm of (listData.richmenus || [])) {
+        await fetch(`https://api.line.me/v2/bot/richmenu/${rm.richMenuId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+      }
+    }
+
+    // 1. 建立 Rich Menu
+    const createRes = await fetch('https://api.line.me/v2/bot/richmenu', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(richMenuDef)
+    });
+    if (!createRes.ok) {
+      const err = await createRes.text();
+      return jsonResponse({ ok: false, step: 'create', error: err }, 500);
+    }
+    const { richMenuId } = await createRes.json();
+
+    // 2. 上傳圖片
+    // 解析 base64
+    const base64 = image.replace(/^data:image\/png;base64,/, '').replace(/^data:image\/jpeg;base64,/, '');
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    const uploadRes = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': image.startsWith('data:image/jpeg') ? 'image/jpeg' : 'image/png'
+      },
+      body: bytes
+    });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text();
+      return jsonResponse({ ok: false, step: 'upload', richMenuId, error: err }, 500);
+    }
+
+    // 3. 設為預設 Rich Menu（所有使用者）
+    const setDefaultRes = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (!setDefaultRes.ok) {
+      const err = await setDefaultRes.text();
+      return jsonResponse({ ok: false, step: 'set-default', richMenuId, error: err }, 500);
+    }
+
+    return jsonResponse({
+      ok: true,
+      richMenuId,
+      message: 'Rich Menu 已建立並設為預設。請重新打開 LINE 聊天室查看。'
+    });
+  } catch (e) {
+    return jsonResponse({ ok: false, error: e.message || String(e) }, 500);
+  }
+}
+
+// ============================================
 // 回應輔助
 // ============================================
 function jsonResponse(data, status = 200, origin = '*') {
@@ -306,6 +411,11 @@ export default {
     }
     if (path === '/api/broadcast' && request.method === 'POST') {
       const res = await handleBroadcast(request, env);
+      res.headers.set('Access-Control-Allow-Origin', origin);
+      return res;
+    }
+    if (path === '/api/richmenu/install' && request.method === 'POST') {
+      const res = await handleRichMenuInstall(request, env);
       res.headers.set('Access-Control-Allow-Origin', origin);
       return res;
     }
