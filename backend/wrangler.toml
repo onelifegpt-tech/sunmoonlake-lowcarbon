@@ -6,11 +6,10 @@ compatibility_date = "2025-03-01"
 [vars]
 ALLOWED_ORIGIN = "https://onelifegpt-tech.github.io"
 
-# KV Namespace 綁定（部署前需用 `wrangler kv namespace create MEMBERS` 建立）
-# 建立後把 id 填到下方，或透過 Dashboard GUI 綁定
-# [[kv_namespaces]]
-# binding = "MEMBERS"
-# id = "REPLACE_WITH_YOUR_KV_ID"
+# KV Namespace：MEMBERS
+[[kv_namespaces]]
+binding = "MEMBERS"
+id = "b592d43f850a41a48f3162b8a5e53ba7"
 
 # 以下機密變數請 **勿寫在這裡**，用 `wrangler secret put XXX` 或 Dashboard 設定
 # - LINE_CHANNEL_ACCESS_TOKEN
