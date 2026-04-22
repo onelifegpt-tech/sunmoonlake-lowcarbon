@@ -950,7 +950,242 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ============================================
-   沉浸式頁面殼層（集碳行動 / 兌換 / 紀錄 / 消息）
+   集碳行動・精品選單風（Landing）
+   ============================================ */
+.collect-landing {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background:
+    linear-gradient(180deg, var(--paper) 0%, var(--card-2) 100%);
+}
+
+.collect-hero {
+  padding: 100px 40px 40px;
+  text-align: center;
+}
+@media (max-width: 767px) {
+  .collect-hero { padding: 80px 28px 32px; }
+}
+
+.collect-eyebrow {
+  font-size: 10px;
+  color: var(--clay);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.collect-title {
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+@media (max-width: 767px) {
+  .collect-title { font-size: 26px; }
+}
+
+.collect-meta {
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+}
+.collect-meta em {
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--clay);
+  font-weight: 500;
+  margin: 0 2px;
+}
+.cm-dot {
+  color: var(--ink-5);
+  margin: 0 8px;
+}
+
+.collect-choices {
+  flex: 1;
+  padding: 0 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+@media (max-width: 767px) {
+  .collect-choices { padding: 0 20px 40px; }
+}
+
+.collect-choice {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--line);
+  padding: 26px 4px;
+  display: grid;
+  grid-template-columns: 36px 56px 1fr auto;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  font-family: inherit;
+}
+.collect-choice:last-child { border-bottom: 1px solid var(--line); }
+.collect-choice:hover {
+  background: var(--card);
+  padding-left: 14px;
+  padding-right: 14px;
+}
+@media (max-width: 767px) {
+  .collect-choice {
+    grid-template-columns: 28px 42px 1fr auto;
+    gap: 14px;
+    padding: 22px 4px;
+  }
+}
+
+.cc-num {
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--ink-4);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.cc-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+@media (max-width: 767px) {
+  .cc-icon { font-size: 26px; }
+}
+
+.cc-main { min-width: 0; }
+.cc-name {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+@media (max-width: 767px) {
+  .cc-name { font-size: 17px; }
+}
+
+.cc-desc {
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+}
+
+.cc-count {
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--clay);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-align: right;
+}
+.cc-count span {
+  font-size: 12px;
+  color: var(--ink-4);
+  margin-left: 1px;
+}
+
+/* ============================================
+   集碳行動・類別詳情（第二層）
+   ============================================ */
+.collect-detail {
+  padding: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.collect-back {
+  position: absolute;
+  top: 80px;
+  left: 32px;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  z-index: 5;
+}
+.collect-back:hover { color: var(--clay); }
+@media (max-width: 767px) {
+  .collect-back { left: 24px; top: 74px; }
+}
+
+.collect-cat-hero {
+  padding: 130px 40px 40px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+@media (max-width: 767px) {
+  .collect-cat-hero { padding: 120px 28px 32px; }
+}
+
+.cch-icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 18px;
+}
+.cch-eyebrow {
+  font-size: 10px;
+  color: var(--clay);
+  letter-spacing: 0.35em;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.cch-title {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+@media (max-width: 767px) {
+  .cch-title { font-size: 24px; }
+}
+.cch-progress {
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.collect-locations {
+  padding: 32px 40px 64px;
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+@media (max-width: 767px) {
+  .collect-locations { padding: 24px 20px 48px; }
+}
+
+/* ============================================
+   沉浸式頁面殼層（兌換 / 紀錄 / 消息）
    ============================================ */
 .immersive-page {
   position: fixed;

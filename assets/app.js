@@ -790,48 +790,110 @@ function bindImmersiveClose() {
 
 // ===== 集碳行動・沉浸式 =====
 function renderHomeFullscreen() {
-  const { earned, balance } = DB.getBalance(state);
+  if (currentCategory === 'all') {
+    renderCollectLanding();
+  } else {
+    renderCollectCategory(currentCategory);
+  }
+}
+
+// 第一層：類別選擇 · 極簡精品風
+function renderCollectLanding() {
+  const { balance } = DB.getBalance(state);
   const co2 = DB.getCO2(state);
   const locs = getActiveLocations();
   const checkedCount = state.checkIns.length;
 
-  // 浮動底部進度條
-  const progressFooter = `
-    <div class="imm-progress-footer">
-      <div class="ipf-row">
-        <div class="ipf-stat">
-          <span class="ipf-value">${balance}</span>
-          <span class="ipf-label">可用點數</span>
+  const order = ['experience', 'accommodation', 'restaurant', 'landmark'];
+  const descriptions = {
+    experience:    '立槳、獨木舟、單車、纜車、遊湖',
+    accommodation: '嚴選在地民宿與渡假飯店',
+    restaurant:    '魚光窯烤雙店、咖啡、餐廳',
+    landmark:      '向山、文武廟、慈恩塔'
+  };
+
+  const counts = {};
+  locs.forEach(l => { counts[l.category] = (counts[l.category] || 0) + 1; });
+  const checkedCounts = {};
+  state.checkIns.forEach(c => {
+    const loc = locs.find(l => l.id === c.locationId);
+    if (loc) checkedCounts[loc.category] = (checkedCounts[loc.category] || 0) + 1;
+  });
+
+  document.getElementById('app').innerHTML = `
+    <div class="immersive-page collect-landing">
+      <button class="imm-close" id="immClose" aria-label="關閉">
+        <span class="imm-close-icon">✕</span>
+      </button>
+
+      <div class="collect-hero">
+        <div class="collect-eyebrow">Collect · 集碳行動</div>
+        <h1 class="collect-title">選擇類別</h1>
+        <div class="collect-meta">
+          <span><em>${balance}</em> 點</span>
+          <span class="cm-dot">·</span>
+          <span><em>${checkedCount}</em>/${locs.length} 已打卡</span>
+          <span class="cm-dot">·</span>
+          <span>減碳 <em>${co2.toFixed(1)}</em> kg</span>
         </div>
-        <div class="ipf-divider"></div>
-        <div class="ipf-stat">
-          <span class="ipf-value">${checkedCount}<span class="ipf-sub">/${locs.length}</span></span>
-          <span class="ipf-label">已打卡</span>
-        </div>
-        <div class="ipf-divider"></div>
-        <div class="ipf-stat">
-          <span class="ipf-value">${co2.toFixed(1)}</span>
-          <span class="ipf-label">減碳 kg</span>
-        </div>
+      </div>
+
+      <div class="collect-choices">
+        ${order.map((cat, i) => {
+          const meta = CATEGORIES[cat];
+          const total = counts[cat] || 0;
+          const checked = checkedCounts[cat] || 0;
+          return `
+            <button class="collect-choice" data-cat="${cat}">
+              <div class="cc-num">${String(i+1).padStart(2, '0')}</div>
+              <div class="cc-icon">${meta.icon}</div>
+              <div class="cc-main">
+                <div class="cc-name">${meta.label}</div>
+                <div class="cc-desc">${descriptions[cat]}</div>
+              </div>
+              <div class="cc-count">${checked}<span>/${total}</span></div>
+            </button>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
 
-  let body;
-  if (currentCategory === 'all') {
-    body = renderCategoryTiles();
-  } else {
-    body = renderCategoryDetail(currentCategory);
-  }
-
-  document.getElementById('app').innerHTML = immersiveShell({
-    eyebrow: 'Collect · 集碳行動',
-    title: currentCategory === 'all' ? '選擇類別' : CATEGORIES[currentCategory]?.label || '',
-    body,
-    footer: progressFooter
+  bindImmersiveClose();
+  document.querySelectorAll('.collect-choice').forEach(btn => {
+    btn.onclick = () => { currentCategory = btn.dataset.cat; render(); };
   });
+}
+
+// 第二層：類別詳情 · 極簡精品風
+function renderCollectCategory(cat) {
+  const meta = CATEGORIES[cat];
+  const locs = getActiveLocations().filter(l => l.category === cat);
+  const checked = locs.filter(l => DB.hasCheckedIn(state, l.id)).length;
+
+  document.getElementById('app').innerHTML = `
+    <div class="immersive-page collect-detail">
+      <button class="imm-close" id="immClose" aria-label="關閉">
+        <span class="imm-close-icon">✕</span>
+      </button>
+
+      <div class="collect-back" id="collectBack">← 選擇類別</div>
+
+      <div class="collect-cat-hero">
+        <div class="cch-icon">${meta.icon}</div>
+        <div class="cch-eyebrow">${cat.toUpperCase()}</div>
+        <h1 class="cch-title">${meta.label}</h1>
+        <div class="cch-progress">${checked} / ${locs.length} 已打卡</div>
+      </div>
+
+      <div class="collect-locations">
+        ${locs.map(l => renderLocationCard(l)).join('')}
+      </div>
+    </div>
+  `;
 
   bindImmersiveClose();
+  document.getElementById('collectBack').onclick = () => { currentCategory = 'all'; render(); };
   bindEvents();
 }
 
