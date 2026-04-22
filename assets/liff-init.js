@@ -25,10 +25,14 @@ function saveLiffConfig(cfg) {
   localStorage.setItem(LIFF_CONFIG_KEY, JSON.stringify(cfg));
 }
 
+// 正式 LIFF App（魚光窯烤・日月潭低碳旅遊）
+const DEFAULT_LIFF_ID = '2009871603-M3x0m8mJ';
+const DEFAULT_OA_NAME = '魚光窯烤';
+
 const _savedCfg = loadLiffConfig();
-window.LIFF_ID = (_savedCfg && _savedCfg.liffId) || '';    // ← admin.html 可填寫
-window.LINE_OA  = (_savedCfg && _savedCfg.oaName)  || '';
-window.LINE_OA_ID = (_savedCfg && _savedCfg.oaId)  || '';
+window.LIFF_ID    = (_savedCfg && _savedCfg.liffId) || DEFAULT_LIFF_ID;
+window.LINE_OA    = (_savedCfg && _savedCfg.oaName) || DEFAULT_OA_NAME;
+window.LINE_OA_ID = (_savedCfg && _savedCfg.oaId)   || '';
 
 (function initLineIntegration() {
   const statusBar = document.getElementById('lineStatus');
