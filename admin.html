@@ -209,8 +209,11 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Worker 網址 <span style="color:#ef4444">*</span></label>
-          <input id="workerUrlInput" placeholder="https://sunmoonlake-lowcarbon-api.你的子網域.workers.dev" autocomplete="off" style="font-family:monospace;font-size:12px">
-          <div style="font-size:10px;color:#888;margin-top:4px">部署 Worker 後會拿到這個網址</div>
+          <input id="workerUrlInput" placeholder="https://sunmoonlake-lowcarbon-api.onelifemini.workers.dev" autocomplete="off" style="font-family:monospace;font-size:12px">
+          <div style="font-size:10px;color:#888;margin-top:4px">
+            部署 Worker 後會拿到這個網址
+            <a href="#" id="fillWorkerUrl" style="color:#f38020;font-weight:600">↓ 帶入已部署網址</a>
+          </div>
         </div>
         <div class="form-field">
           <label>Admin Token <span style="color:#ef4444">*</span></label>
@@ -787,6 +790,11 @@
       localStorage.removeItem('bread_api_config');
       document.getElementById('apiResult').innerHTML = '';
       renderApiUI();
+    };
+
+    document.getElementById('fillWorkerUrl').onclick = (e) => {
+      e.preventDefault();
+      document.getElementById('workerUrlInput').value = 'https://sunmoonlake-lowcarbon-api.onelifemini.workers.dev';
     };
 
     renderApiUI();
