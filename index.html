@@ -5,19 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>日月潭低碳麵包集點 | 魚光窯烤</title>
   <meta name="description" content="日月潭低碳旅遊・走訪 10 個合作點，兌換具有社會影響力的減碳麵包">
+  <!-- 字體預連線（加速載入） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap">
+
   <link rel="stylesheet" href="assets/style.css">
+
+  <!-- 首屏避閃 CSS（立即套用，避免白屏） -->
+  <style>
+    html, body {
+      background: #e8e2d3;
+      font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Helvetica Neue", sans-serif;
+      margin: 0;
+    }
+    body { visibility: hidden; }
+    body.ready { visibility: visible; }
+    #splash {
+      position: fixed; inset: 0;
+      background: #e8e2d3;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+    #splash.fade { opacity: 0; pointer-events: none; }
+    .splash-mark {
+      text-align: center;
+    }
+    .splash-eyebrow {
+      font-size: 9px;
+      color: #8a3e2a;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+    .splash-title {
+      font-family: "Noto Serif TC", serif;
+      font-size: 20px;
+      color: #1c1a17;
+      letter-spacing: 0.1em;
+      font-weight: 500;
+    }
+    .splash-loader {
+      margin-top: 28px;
+      width: 40px; height: 1px;
+      background: #c9beb0;
+      position: relative;
+      margin-left: auto; margin-right: auto;
+      overflow: hidden;
+    }
+    .splash-loader::after {
+      content: '';
+      position: absolute;
+      left: -40px; top: 0;
+      width: 40px; height: 1px;
+      background: #8a3e2a;
+      animation: splashSlide 1.2s infinite linear;
+    }
+    @keyframes splashSlide {
+      0% { left: -40px; } 100% { left: 40px; }
+    }
+  </style>
 
   <!-- Leaflet 地圖（綠色地圖功能用） -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
 
   <!-- QR 掃碼 -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
 
   <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
+  <!-- 啟動畫面（避免白屏與字體閃跳） -->
+  <div id="splash">
+    <div class="splash-mark">
+      <div class="splash-eyebrow">Sun Moon Lake</div>
+      <div class="splash-title">日月潭低碳旅遊手帖</div>
+      <div class="splash-loader"></div>
+    </div>
+  </div>
+
   <!-- LINE 狀態列（綁 LINE 時顯示使用者名稱） -->
   <div id="lineStatus" class="line-status">
     <span class="line-dot"></span>
@@ -29,5 +100,31 @@
   <script src="assets/data.js"></script>
   <script src="assets/liff-init.js"></script>
   <script src="assets/app.js"></script>
+
+  <!-- 啟動完成後移除 splash（等 fonts + DOM 就緒） -->
+  <script>
+    (function() {
+      const hideSplash = () => {
+        document.body.classList.add('ready');
+        const splash = document.getElementById('splash');
+        if (splash) {
+          splash.classList.add('fade');
+          setTimeout(() => splash.remove(), 350);
+        }
+      };
+      const fontsReady = document.fonts && document.fonts.ready
+        ? document.fonts.ready
+        : new Promise(r => setTimeout(r, 600));
+      Promise.all([
+        fontsReady,
+        new Promise(r => {
+          if (document.readyState === 'complete') r();
+          else window.addEventListener('load', r);
+        })
+      ]).then(() => setTimeout(hideSplash, 150));
+      // 備援：最長等 2.5 秒強制顯示
+      setTimeout(hideSplash, 2500);
+    })();
+  </script>
 </body>
 </html>

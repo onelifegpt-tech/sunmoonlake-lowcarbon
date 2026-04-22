@@ -961,51 +961,56 @@ input, select, textarea { font-family: inherit; }
 }
 
 .collect-hero {
-  padding: 100px 40px 40px;
+  padding: 84px 40px 28px;
   text-align: center;
 }
 @media (max-width: 767px) {
-  .collect-hero { padding: 80px 28px 32px; }
+  .collect-hero { padding: 72px 24px 24px; }
 }
 
 .collect-eyebrow {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--clay);
-  letter-spacing: 0.35em;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
   font-weight: 500;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .collect-title {
   font-family: var(--font-serif);
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   line-height: 1.2;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 @media (max-width: 767px) {
-  .collect-title { font-size: 26px; }
+  .collect-title { font-size: 22px; letter-spacing: 0.12em; }
 }
 
 .collect-meta {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ink-3);
   letter-spacing: 0.08em;
+  line-height: 1.8;
 }
 .collect-meta em {
   font-family: "Cormorant Garamond", var(--font-serif);
   font-style: italic;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--clay);
   font-weight: 500;
   margin: 0 2px;
 }
 .cm-dot {
   color: var(--ink-5);
-  margin: 0 8px;
+  margin: 0 6px;
+}
+@media (max-width: 767px) {
+  .collect-meta em { font-size: 13px; }
+  .cm-dot { margin: 0 4px; }
 }
 
 .collect-choices {
@@ -1026,80 +1031,85 @@ input, select, textarea { font-family: inherit; }
   background: transparent;
   border: none;
   border-top: 1px solid var(--line);
-  padding: 26px 4px;
+  padding: 22px 4px;
   display: grid;
-  grid-template-columns: 36px 56px 1fr auto;
+  grid-template-columns: 28px 44px 1fr auto;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   cursor: pointer;
   transition: all 0.25s ease;
   text-align: left;
   font-family: inherit;
+  width: 100%;
 }
 .collect-choice:last-child { border-bottom: 1px solid var(--line); }
 .collect-choice:hover {
   background: var(--card);
-  padding-left: 14px;
-  padding-right: 14px;
+  padding-left: 12px;
+  padding-right: 12px;
 }
 @media (max-width: 767px) {
   .collect-choice {
-    grid-template-columns: 28px 42px 1fr auto;
-    gap: 14px;
-    padding: 22px 4px;
+    grid-template-columns: 24px 36px 1fr auto;
+    gap: 12px;
+    padding: 18px 0;
   }
 }
 
 .cc-num {
   font-family: "Cormorant Garamond", var(--font-serif);
   font-style: italic;
-  font-size: 20px;
+  font-size: 18px;
   color: var(--ink-4);
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 
 .cc-icon {
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1;
 }
 @media (max-width: 767px) {
-  .cc-icon { font-size: 26px; }
+  .cc-icon { font-size: 22px; }
 }
 
 .cc-main { min-width: 0; }
 .cc-name {
   font-family: var(--font-serif);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   line-height: 1.3;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 @media (max-width: 767px) {
-  .cc-name { font-size: 17px; }
+  .cc-name { font-size: 16px; letter-spacing: 0.08em; }
 }
 
 .cc-desc {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ink-3);
   letter-spacing: 0.06em;
   line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cc-count {
   font-family: "Cormorant Garamond", var(--font-serif);
   font-style: italic;
-  font-size: 24px;
+  font-size: 22px;
   color: var(--clay);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1;
   text-align: right;
+  white-space: nowrap;
 }
 .cc-count span {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ink-4);
   margin-left: 1px;
 }
