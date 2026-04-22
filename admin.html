@@ -191,6 +191,74 @@
     </div>
   </div>
 
+  <!-- LINE 整合設定 -->
+  <div style="padding: 16px 16px 0;">
+    <div class="panel" style="border: 2px solid #06C755;">
+      <h2>
+        📱 LINE 官方帳號・整合設定
+        <span class="count" id="liffStatusPill">尚未設定</span>
+      </h2>
+      <div style="font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.7;">
+        平台支援綁定 LINE 官方帳號。填入以下資訊後，使用者透過 LINE Rich Menu 開啟時將自動登入並取得個人資料。
+        <br>
+        取得方式：<a href="https://developers.line.biz/console/" target="_blank" style="color:#06C755;font-weight:600">LINE Developers Console</a> → 建立 LIFF App → 複製 LIFF ID
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>LIFF ID <span style="color:#ef4444">*</span></label>
+          <input id="liffIdInput" placeholder="例：2001234567-AbCdEfGh" autocomplete="off" style="font-family:monospace">
+          <div style="font-size:10px;color:#888;margin-top:4px">格式：10 位數字 + 連字號 + 8 位英數</div>
+        </div>
+        <div class="form-field">
+          <label>LINE 官方帳號名稱</label>
+          <input id="oaNameInput" placeholder="例：魚光窯烤" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>LINE OA Basic ID（選填，顯示用）</label>
+          <input id="oaIdInput" placeholder="例：@yuguang-bread" autocomplete="off" style="font-family:monospace">
+        </div>
+        <div class="form-field">
+          <label>LIFF Endpoint URL（自動帶入，參考用）</label>
+          <input id="liffUrlInput" readonly style="background:#f9fafb;font-family:monospace;font-size:11px">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top: 14px;">
+        <button class="btn-save" id="saveLiffBtn" style="flex:1;padding:12px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:#06C755;color:#fff;font-family:inherit;font-size:13px">
+          💾 儲存並啟用 LINE 整合
+        </button>
+        <button id="testLiffBtn" style="padding:12px 20px;background:#fff;border:1px solid #06C755;color:#06C755;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+          🧪 測試連結
+        </button>
+        <button id="clearLiffBtn" style="padding:12px 16px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+          清除
+        </button>
+      </div>
+
+      <div id="liffResult" style="margin-top:14px"></div>
+
+      <details style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:12px;color:#065f46;line-height:1.7">
+        <summary style="cursor:pointer;font-weight:700">📘 如何取得 LIFF ID？（點擊展開）</summary>
+        <ol style="margin-top:10px;padding-left:20px;">
+          <li>到 <a href="https://developers.line.biz/console/" target="_blank" style="color:#06C755">LINE Developers Console</a> 登入</li>
+          <li>建立 <strong>Provider</strong>（若已有可跳過）</li>
+          <li>在 Provider 下 <strong>Create Channel</strong> → 選 <strong>LINE Login</strong></li>
+          <li>進入 Channel → 點上方 <strong>LIFF</strong> 分頁 → <strong>Add</strong></li>
+          <li>填入：<br>
+            　• <strong>Size</strong>：Full<br>
+            　• <strong>Endpoint URL</strong>：<code style="background:#fff;padding:2px 6px;border-radius:3px">https://onelifegpt-tech.github.io/sunmoonlake-lowcarbon/</code><br>
+            　• <strong>Scopes</strong>：勾 profile + openid<br>
+            　• <strong>Scan QR</strong>：On
+          </li>
+          <li>建立後會看到藍色的 <strong>LIFF ID</strong>，格式如 <code style="background:#fff;padding:2px 6px;border-radius:3px">2001234567-AbCdEfGh</code>，複製貼到上面的欄位即可</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
   <div class="admin-layout">
     <!-- 左：店家清單 + 編輯表單 -->
     <div class="panel">
@@ -489,6 +557,99 @@
       }
       window.open(`https://www.google.com/maps/search/${encodeURIComponent(addr)}`, '_blank');
     };
+
+    // ============================================
+    // LINE 整合設定
+    // ============================================
+    const LIFF_CFG_KEY = 'bread_liff_config';
+    const LIFF_ENDPOINT = 'https://onelifegpt-tech.github.io/sunmoonlake-lowcarbon/';
+
+    function loadLiffCfg() {
+      try { return JSON.parse(localStorage.getItem(LIFF_CFG_KEY)) || {}; }
+      catch (e) { return {}; }
+    }
+
+    function renderLiffUI() {
+      const cfg = loadLiffCfg();
+      document.getElementById('liffIdInput').value   = cfg.liffId || '';
+      document.getElementById('oaNameInput').value   = cfg.oaName || '';
+      document.getElementById('oaIdInput').value     = cfg.oaId   || '';
+      document.getElementById('liffUrlInput').value  = LIFF_ENDPOINT;
+
+      const pill = document.getElementById('liffStatusPill');
+      if (cfg.liffId) {
+        pill.textContent = `✓ 已設定 ${cfg.oaName || cfg.liffId}`;
+        pill.style.background = '#d1fae5';
+        pill.style.color = '#065f46';
+        pill.style.padding = '3px 10px';
+        pill.style.borderRadius = '10px';
+        pill.style.fontWeight = '600';
+      } else {
+        pill.textContent = '尚未設定';
+        pill.style.color = '#888';
+      }
+    }
+
+    function validateLiffId(v) {
+      return /^\d{10}-[A-Za-z0-9]{8}$/.test(v.trim());
+    }
+
+    document.getElementById('saveLiffBtn').onclick = () => {
+      const liffId = document.getElementById('liffIdInput').value.trim();
+      const oaName = document.getElementById('oaNameInput').value.trim();
+      const oaId   = document.getElementById('oaIdInput').value.trim();
+      const result = document.getElementById('liffResult');
+
+      if (!liffId) {
+        result.innerHTML = '<div style="padding:10px;background:#fef2f2;border-radius:6px;color:#991b1b;font-size:12px">⚠️ 請填入 LIFF ID</div>';
+        return;
+      }
+      if (!validateLiffId(liffId)) {
+        result.innerHTML = '<div style="padding:10px;background:#fef2f2;border-radius:6px;color:#991b1b;font-size:12px">⚠️ LIFF ID 格式錯誤，應為 <code>1234567890-AbCdEfGh</code></div>';
+        return;
+      }
+
+      localStorage.setItem(LIFF_CFG_KEY, JSON.stringify({ liffId, oaName, oaId }));
+      renderLiffUI();
+
+      result.innerHTML = `
+        <div style="padding:14px;background:#f0fdf4;border:1px solid #06C755;border-radius:8px">
+          <div style="font-weight:700;color:#065f46;margin-bottom:8px">✓ LINE 整合已啟用</div>
+          <div style="font-size:12px;color:#065f46;line-height:1.7">
+            LIFF 網址：<br>
+            <code style="display:block;background:#fff;padding:8px;border-radius:4px;margin-top:4px;word-break:break-all;font-size:11px">
+              https://liff.line.me/${liffId}
+            </code>
+            <div style="margin-top:10px">
+              ✅ 這串網址可以放到 LINE Rich Menu 的連結中<br>
+              ✅ 使用者加入 LINE@ 後從選單點擊會自動開啟此平台<br>
+              ⚠️ 需將此設定同步推上 GitHub 才能讓所有人使用（下方有說明）
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:#fef3c7;border-radius:6px;font-size:11px;color:#92400e">
+            <strong>📌 下一步：</strong>目前設定只存在您這台裝置上。要讓正式上線，請把 LIFF ID 告訴開發者，或依下方指示推上 GitHub。
+          </div>
+        </div>
+      `;
+    };
+
+    document.getElementById('testLiffBtn').onclick = () => {
+      const cfg = loadLiffCfg();
+      if (!cfg.liffId) {
+        alert('請先儲存 LIFF ID');
+        return;
+      }
+      window.open(`https://liff.line.me/${cfg.liffId}`, '_blank');
+    };
+
+    document.getElementById('clearLiffBtn').onclick = () => {
+      if (!confirm('確定要清除 LINE 整合設定嗎？')) return;
+      localStorage.removeItem(LIFF_CFG_KEY);
+      renderLiffUI();
+      document.getElementById('liffResult').innerHTML = '';
+    };
+
+    renderLiffUI();
 
     // 啟動
     initMap();

@@ -12,7 +12,23 @@
 //   (d) 拿到 LIFF ID（例 1234567890-AbCdEfGh）填到下面的 LIFF_ID
 // ============================================
 
-window.LIFF_ID = '';  // ← 正式上線時把 LIFF ID 填這裡
+// 優先從後台設定（localStorage）讀取，否則用 code 內建
+const LIFF_CONFIG_KEY = 'bread_liff_config';
+
+function loadLiffConfig() {
+  try {
+    const raw = localStorage.getItem(LIFF_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function saveLiffConfig(cfg) {
+  localStorage.setItem(LIFF_CONFIG_KEY, JSON.stringify(cfg));
+}
+
+const _savedCfg = loadLiffConfig();
+window.LIFF_ID = (_savedCfg && _savedCfg.liffId) || '';    // ← admin.html 可填寫
+window.LINE_OA  = (_savedCfg && _savedCfg.oaName)  || '';
+window.LINE_OA_ID = (_savedCfg && _savedCfg.oaId)  || '';
 
 (function initLineIntegration() {
   const statusBar = document.getElementById('lineStatus');
@@ -26,7 +42,7 @@ window.LIFF_ID = '';  // ← 正式上線時把 LIFF ID 填這裡
 
   // 沒有 LIFF ID，走瀏覽器模擬模式
   if (!window.LIFF_ID) {
-    setStatus('🧪 瀏覽器模擬模式（未綁定 LINE）', 'demo');
+    setStatus('未綁定 LINE｜請至後台填入 LIFF ID', 'demo');
     window.LINE_USER = { userId: 'DEMO-USER', displayName: '測試訪客', pictureUrl: null, mode: 'demo' };
     return;
   }
