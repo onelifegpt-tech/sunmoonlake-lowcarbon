@@ -772,32 +772,64 @@ function render() {
   bindEvents();
 }
 
-// ===== 綠色地圖全屏模式 =====
+// ===== 綠色地圖・沉浸式模式 =====
+// 只有地圖本身，所有 UI 元件浮於地圖之上（像 Google Maps / Airbnb）
 function renderMapFullscreen() {
   document.getElementById('app').innerHTML = `
-    <div class="fullscreen-map">
-      <div class="fs-map-bar">
-        <button class="fs-back-btn" id="fsBackBtn">← 返回</button>
-        <div class="fs-map-title">
-          <div class="fs-map-eyebrow">Green Map</div>
-          <div class="fs-map-label">綠色地圖</div>
-        </div>
-        <div class="fs-map-count">${getActiveLocations().length} locations</div>
+    <div class="immersive-map">
+      <div id="greenMap" class="green-map immersive"></div>
+
+      <!-- 浮動關閉鈕（左上）· 在 LINE 裡會關閉回聊天室 -->
+      <button class="map-float-back" id="fsBackBtn" aria-label="關閉">
+        <span class="mfb-arrow" id="fsBackIcon">✕</span>
+      </button>
+
+      <!-- 浮動標題（上方中央） -->
+      <div class="map-float-title">
+        <div class="mft-eyebrow">Green Map</div>
+        <div class="mft-label">綠色地圖</div>
       </div>
-      <div id="greenMap" class="green-map fs"></div>
-      <div class="map-legend fs">
-        ${Object.entries(CATEGORIES).map(([id, c]) => `
-          <span class="legend-item">
-            <span class="legend-dot" style="background:${c.color}"></span>${c.icon} ${c.label}
-          </span>
-        `).join('')}
+
+      <!-- 浮動圖例（右下，可展開／收合） -->
+      <div class="map-float-legend" id="mapLegend">
+        <button class="mfl-toggle" id="mflToggle" aria-label="圖例">
+          <span class="mfl-icon">◯</span>
+          <span class="mfl-text">圖例</span>
+        </button>
+        <div class="mfl-panel">
+          <div class="mfl-title">Legend · 據點分類</div>
+          ${Object.entries(CATEGORIES).map(([id, c]) => {
+            const count = getActiveLocations().filter(l => l.category === id).length;
+            return `
+              <div class="mfl-row">
+                <span class="legend-dot" style="background:${c.color}"></span>
+                <span class="mfl-name">${c.label}</span>
+                <span class="mfl-count">${count}</span>
+              </div>
+            `;
+          }).join('')}
+          <div class="mfl-footer">共 ${getActiveLocations().length} 處・點選據點進行打卡</div>
+        </div>
       </div>
     </div>
   `;
   document.getElementById('fsBackBtn').onclick = () => {
-    currentTab = 'home';
-    currentCategory = 'all';
-    render();
+    // 在 LINE LIFF 裡：關閉視窗回到聊天室
+    if (window.liff && typeof liff.closeWindow === 'function' && liff.isInClient && liff.isInClient()) {
+      try { liff.closeWindow(); return; } catch (e) {}
+    }
+    // 瀏覽器模式：若有上一頁就回上一頁，否則回首頁
+    if (window.history.length > 1 && document.referrer) {
+      window.history.back();
+    } else {
+      currentTab = 'home';
+      currentCategory = 'all';
+      render();
+    }
+  };
+  const legend = document.getElementById('mapLegend');
+  document.getElementById('mflToggle').onclick = () => {
+    legend.classList.toggle('expanded');
   };
   setTimeout(initMap, 50);
 }
@@ -869,6 +901,16 @@ function bindEvents() {
   // 類別詳情返回（第二層 → 第一層）
   document.querySelectorAll('.cat-back-btn').forEach(b => {
     b.onclick = () => { currentCategory = b.dataset.cat || 'all'; render(); };
+  });
+
+  // 全域：任何浮動 close/back 鈕皆回 LINE
+  document.querySelectorAll('[data-close-liff]').forEach(b => {
+    b.onclick = () => {
+      if (window.liff && typeof liff.closeWindow === 'function' && liff.isInClient && liff.isInClient()) {
+        try { liff.closeWindow(); return; } catch (e) {}
+      }
+      window.history.length > 1 ? window.history.back() : (currentTab = 'home', render());
+    };
   });
 
   // 地點卡：點擊依 verifyMethod 分流
