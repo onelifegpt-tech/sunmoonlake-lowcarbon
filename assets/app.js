@@ -7,6 +7,22 @@ let currentTab = 'home';
 let currentCategory = 'all';   // 首頁類別篩選
 let mapInstance = null;         // Leaflet 地圖實例（綠色地圖）
 
+// 從 URL 讀取 tab 參數（給 LINE Rich Menu 用）
+// 支援：?tab=home / map / reward / history / news
+(function applyUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  const validTabs = ['home', 'map', 'reward', 'history', 'news'];
+  if (tab && validTabs.includes(tab)) {
+    currentTab = tab;
+    // 若帶 tab 參數，直接跳過歡迎頁
+    if (!state.onboarded) {
+      state.onboarded = true;
+      DB.save(state);
+    }
+  }
+})();
+
 // 正式部署時啟用：
 // const LIFF_ID = 'YOUR_LIFF_ID';
 // liff.init({ liffId: LIFF_ID }).then(async () => { ... });
@@ -43,19 +59,50 @@ function renderProgress() {
   `;
 }
 
-// ===== Tabs（加入綠色地圖） =====
+// ===== Tabs =====
 function renderTabs() {
   const tabs = [
-    { id: 'home',    label: '集點地圖' },
-    { id: 'map',     label: '🗺️ 綠色地圖' },
+    { id: 'home',    label: '集碳行動' },
+    { id: 'map',     label: '綠色地圖' },
     { id: 'reward',  label: '兌換麵包' },
-    { id: 'history', label: '我的紀錄' }
+    { id: 'history', label: '我的點數' },
+    { id: 'news',    label: '最新消息' }
   ];
   return `
     <div class="tabs">
       ${tabs.map(t => `
         <div class="tab ${currentTab === t.id ? 'active' : ''}" data-tab="${t.id}">${t.label}</div>
       `).join('')}
+    </div>
+  `;
+}
+
+// ===== 最新消息 Tab =====
+function renderNews() {
+  return `
+    <div class="section-title">Latest · 最新消息</div>
+    <div class="news-list">
+      <article class="news-item">
+        <div class="news-date">04.22</div>
+        <div class="news-body">
+          <div class="news-title">日月潭低碳旅遊手帖・正式上線</div>
+          <div class="news-desc">集結 16 家在地合作夥伴，以拍照與掃碼兩種方式，記錄屬於你的低碳旅程。</div>
+        </div>
+      </article>
+      <article class="news-item">
+        <div class="news-date">04.18</div>
+        <div class="news-body">
+          <div class="news-title">碳麵包首波兌換開始</div>
+          <div class="news-desc">集滿 10 點即可兌換「碳麵包」紀念款。限量非賣品，僅致贈於完成旅程的旅人。</div>
+        </div>
+      </article>
+      <article class="news-item">
+        <div class="news-date">04.10</div>
+        <div class="news-body">
+          <div class="news-title">向山遊客中心加入合作據點</div>
+          <div class="news-desc">經典清水模建築正式列入拍照打卡點，透過 AI 影像辨識即可累積 2 點。</div>
+        </div>
+      </article>
     </div>
   `;
 }
@@ -641,6 +688,7 @@ function render() {
   else if (currentTab === 'map') body = renderMapTab();
   else if (currentTab === 'reward') body = renderReward();
   else if (currentTab === 'history') body = renderHistory();
+  else if (currentTab === 'news') body = renderNews();
 
   document.getElementById('app').innerHTML = `
     <div class="app-header">

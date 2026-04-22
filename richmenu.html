@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Rich Menu 底圖產生器 | 日月潭低碳集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background: #2d3e52; color: #e5e7eb; max-width: 100%; padding: 24px; }
+
+    .rm-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      max-width: 1300px; margin: 0 auto 20px;
+    }
+    .rm-toolbar h1 { font-size: 20px; color: #fff; letter-spacing: 0.05em; }
+    .rm-toolbar p { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    .rm-actions { display: flex; gap: 10px; }
+    .rm-btn {
+      background: #06C755; color: #fff; border: none;
+      padding: 10px 18px; border-radius: 6px; cursor: pointer;
+      font-weight: 700; font-size: 13px; font-family: inherit;
+    }
+    .rm-btn.alt { background: #4b5563; }
+
+    .rm-canvas-wrap {
+      max-width: 1300px; margin: 0 auto;
+      background: #fff; padding: 20px; border-radius: 8px;
+      overflow: auto;
+    }
+
+    /* Rich Menu 真實尺寸 2500×1686（六格 3×2） */
+    /* 預覽時縮放到容器寬度 */
+    .rm-canvas {
+      width: 2500px;
+      height: 1686px;
+      background: #e8e2d3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      position: relative;
+      transform-origin: top left;
+    }
+
+    /* 裝飾背景 */
+    .rm-canvas::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(138, 62, 42, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 20% 80%, rgba(74, 90, 66, 0.05) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    .rm-cell {
+      border-right: 1px solid #c9beb0;
+      border-bottom: 1px solid #c9beb0;
+      padding: 70px 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      background: rgba(250, 247, 239, 0.3);
+    }
+    .rm-cell:nth-child(3n) { border-right: none; }
+    .rm-cell:nth-child(n+4) { border-bottom: none; }
+
+    .rm-cell-num {
+      font-family: "Cormorant Garamond", "Noto Serif TC", serif;
+      font-style: italic;
+      font-size: 56px;
+      color: #8a3e2a;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+
+    .rm-cell-icon {
+      font-size: 140px;
+      text-align: right;
+      line-height: 1;
+    }
+
+    .rm-cell-name {
+      font-family: "Noto Serif TC", serif;
+      font-size: 96px;
+      font-weight: 500;
+      color: #1c1a17;
+      letter-spacing: 0.1em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .rm-cell-sub {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 40px;
+      color: #4a453d;
+      letter-spacing: 0.06em;
+      font-weight: 400;
+    }
+
+    /* 右下角品牌標記 */
+    .rm-footer {
+      position: absolute;
+      bottom: 30px; right: 40px;
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+      font-size: 32px;
+      color: #807968;
+      letter-spacing: 0.2em;
+      pointer-events: none;
+    }
+
+    .rm-scale-info {
+      max-width: 1300px; margin: 16px auto 0;
+      color: #9ca3af; font-size: 12px; text-align: center;
+    }
+    .rm-scale-info code {
+      background: #374151; padding: 2px 8px; border-radius: 3px;
+      font-family: monospace; color: #e5e7eb;
+    }
+
+    .rm-tips {
+      max-width: 1300px; margin: 24px auto;
+      background: #374151; color: #e5e7eb;
+      padding: 20px; border-radius: 8px;
+      font-size: 13px; line-height: 1.8;
+    }
+    .rm-tips h3 { margin-bottom: 10px; color: #06C755; }
+    .rm-tips code { background: #1f2937; padding: 2px 8px; border-radius: 3px; font-size: 11px; }
+    .rm-tips ol { padding-left: 20px; }
+    .rm-tips table { width: 100%; margin-top: 10px; border-collapse: collapse; }
+    .rm-tips th, .rm-tips td { padding: 6px 10px; border: 1px solid #4b5563; text-align: left; font-size: 12px; }
+    .rm-tips th { background: #1f2937; color: #06C755; }
+  </style>
+</head>
+<body>
+
+  <div class="rm-toolbar">
+    <div>
+      <h1>🎨 Rich Menu 底圖產生器</h1>
+      <p>尺寸：2500 × 1686 px（LINE 官方帳號大版圖文選單）</p>
+    </div>
+    <div class="rm-actions">
+      <button class="rm-btn alt" id="downloadBtn">💾 下載 PNG 圖</button>
+      <button class="rm-btn" id="copyLinksBtn">📋 複製 Rich Menu 連結清單</button>
+    </div>
+  </div>
+
+  <div class="rm-canvas-wrap" id="canvasWrap">
+    <div class="rm-canvas" id="rmCanvas">
+      <!-- Row 1 -->
+      <div class="rm-cell">
+        <div class="rm-cell-num">i.</div>
+        <div>
+          <div class="rm-cell-name">綠色地圖</div>
+          <div class="rm-cell-sub">Green Map</div>
+        </div>
+      </div>
+      <div class="rm-cell">
+        <div class="rm-cell-num">ii.</div>
+        <div>
+          <div class="rm-cell-name">集碳行動</div>
+          <div class="rm-cell-sub">Check-in</div>
+        </div>
+      </div>
+      <div class="rm-cell">
+        <div class="rm-cell-num">iii.</div>
+        <div>
+          <div class="rm-cell-name">最新消息</div>
+          <div class="rm-cell-sub">Latest</div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="rm-cell">
+        <div class="rm-cell-num">iv.</div>
+        <div>
+          <div class="rm-cell-name">我的點數</div>
+          <div class="rm-cell-sub">My Points</div>
+        </div>
+      </div>
+      <div class="rm-cell">
+        <div class="rm-cell-num">v.</div>
+        <div>
+          <div class="rm-cell-name">兌換麵包</div>
+          <div class="rm-cell-sub">Redeem</div>
+        </div>
+      </div>
+      <div class="rm-cell">
+        <div class="rm-cell-num">vi.</div>
+        <div>
+          <div class="rm-cell-name">真人回覆</div>
+          <div class="rm-cell-sub">Contact Us</div>
+        </div>
+      </div>
+
+      <div class="rm-footer">Sun Moon Lake · Low-Carbon Journal</div>
+    </div>
+  </div>
+
+  <div class="rm-scale-info">
+    目前預覽已按比例縮放顯示。實際匯出為 <code>2500 × 1686 px</code> 全尺寸 PNG。
+  </div>
+
+  <div class="rm-tips">
+    <h3>📘 在 LINE 官方帳號 Manager 建立 Rich Menu 步驟</h3>
+    <ol>
+      <li>打開 <a href="https://manager.line.biz/" target="_blank" style="color:#06C755">https://manager.line.biz/</a></li>
+      <li>選擇你的官方帳號 → 左側 <strong>「主頁 → 圖文選單」</strong> → 右上 <strong>建立</strong></li>
+      <li>版型選 <strong>大版 2500×1686（6 格）</strong></li>
+      <li>上傳剛剛下載的 PNG 圖</li>
+      <li>每個方格依下表設定動作為「<strong>連結</strong>」並貼上對應網址</li>
+    </ol>
+    <table>
+      <thead>
+        <tr><th>格子</th><th>名稱</th><th>動作類型</th><th>連結 / 內容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>左上 (i)</td><td>綠色地圖</td><td>連結</td><td><code>https://liff.line.me/2009871603-M3x0m8mJ?tab=map</code></td></tr>
+        <tr><td>中上 (ii)</td><td>集碳行動</td><td>連結</td><td><code>https://liff.line.me/2009871603-M3x0m8mJ?tab=home</code></td></tr>
+        <tr><td>右上 (iii)</td><td>最新消息</td><td>連結</td><td><code>https://liff.line.me/2009871603-M3x0m8mJ?tab=news</code></td></tr>
+        <tr><td>左下 (iv)</td><td>我的點數</td><td>連結</td><td><code>https://liff.line.me/2009871603-M3x0m8mJ?tab=history</code></td></tr>
+        <tr><td>中下 (v)</td><td>兌換麵包</td><td>連結</td><td><code>https://liff.line.me/2009871603-M3x0m8mJ?tab=reward</code></td></tr>
+        <tr><td>右下 (vi)</td><td>真人回覆</td><td>文字訊息</td><td>傳送文字「真人回覆」或選「撥打電話」</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // 預覽縮放
+    function applyScale() {
+      const wrap = document.getElementById('canvasWrap');
+      const canvas = document.getElementById('rmCanvas');
+      const wrapW = wrap.clientWidth - 40;
+      const scale = Math.min(1, wrapW / 2500);
+      canvas.style.transform = `scale(${scale})`;
+      wrap.style.height = (1686 * scale + 40) + 'px';
+    }
+    window.addEventListener('resize', applyScale);
+    applyScale();
+
+    // 下載 PNG
+    document.getElementById('downloadBtn').onclick = async () => {
+      const btn = document.getElementById('downloadBtn');
+      btn.disabled = true;
+      btn.textContent = '🎨 產生中...';
+
+      const canvas = document.getElementById('rmCanvas');
+      // 暫時還原 scale 再截圖
+      canvas.style.transform = 'scale(1)';
+      document.getElementById('canvasWrap').style.height = '1706px';
+
+      try {
+        const result = await html2canvas(canvas, {
+          width: 2500, height: 1686,
+          scale: 1,
+          useCORS: true,
+          backgroundColor: '#e8e2d3'
+        });
+        const link = document.createElement('a');
+        link.download = 'rich-menu-2500x1686.png';
+        link.href = result.toDataURL('image/png');
+        link.click();
+      } catch (e) {
+        alert('產生失敗：' + e.message);
+      }
+
+      applyScale();
+      btn.disabled = false;
+      btn.textContent = '💾 下載 PNG 圖';
+    };
+
+    // 複製連結清單
+    document.getElementById('copyLinksBtn').onclick = () => {
+      const text = `【日月潭低碳集點・Rich Menu 連結清單】
+
+綠色地圖：https://liff.line.me/2009871603-M3x0m8mJ?tab=map
+集碳行動：https://liff.line.me/2009871603-M3x0m8mJ?tab=home
+最新消息：https://liff.line.me/2009871603-M3x0m8mJ?tab=news
+我的點數：https://liff.line.me/2009871603-M3x0m8mJ?tab=history
+兌換麵包：https://liff.line.me/2009871603-M3x0m8mJ?tab=reward
+真人回覆：（選擇動作「文字訊息」，內容：真人回覆）`;
+      navigator.clipboard.writeText(text);
+      alert('✓ 連結清單已複製到剪貼簿');
+    };
+  </script>
+</body>
+</html>

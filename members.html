@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員管理 | 日月潭低碳集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background: #f3f4f6; max-width: 100%; }
+    .mem-wrap { max-width: 1280px; margin: 0 auto; }
+
+    .mem-header {
+      background: linear-gradient(135deg, #1c1a17, #2e2b26);
+      color: #fff; padding: 28px 32px;
+    }
+    .mem-header h1 {
+      font-family: "Noto Serif TC", serif; font-size: 22px;
+      font-weight: 500; letter-spacing: 0.05em;
+    }
+    .mem-header p { font-size: 12px; color: #c6bfad; margin-top: 6px; letter-spacing: 0.08em; }
+    .mem-header .oa-tag {
+      display: inline-block; background: #06C755;
+      padding: 4px 12px; border-radius: 3px;
+      font-size: 11px; font-weight: 600; margin-top: 10px; letter-spacing: 0.05em;
+    }
+
+    .toolbar {
+      padding: 12px 20px; background: #fff; border-bottom: 1px solid #e5e7eb;
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    }
+    .toolbar a { color: #1c1a17; text-decoration: none; font-size: 12px; margin-right: 8px; font-weight: 500; }
+    .toolbar a:hover { color: #8a3e2a; }
+
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      padding: 24px 32px; background: #fff; border-bottom: 1px solid #e5e7eb;
+    }
+    @media (max-width: 767px) { .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 16px; } }
+    .stat-box { text-align: left; }
+    .stat-box .v {
+      font-family: "Cormorant Garamond", serif; font-style: italic;
+      font-size: 38px; color: #1c1a17; line-height: 1;
+    }
+    .stat-box .l {
+      font-size: 10px; color: #807968; margin-top: 8px;
+      letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+    }
+
+    .mem-layout {
+      display: grid; grid-template-columns: 1.2fr 1fr;
+      gap: 16px; padding: 16px;
+    }
+    @media (max-width: 900px) { .mem-layout { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: #fff; border-radius: 8px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .panel h2 {
+      font-family: "Noto Serif TC", serif; font-size: 14px;
+      margin-bottom: 16px; letter-spacing: 0.1em; text-transform: uppercase;
+      display: flex; justify-content: space-between; align-items: center;
+      color: #1c1a17;
+    }
+    .panel h2 span.meta {
+      font-family: inherit; font-size: 11px; color: #807968;
+      font-weight: 400; letter-spacing: 0.05em; text-transform: none;
+    }
+
+    .search-bar {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid #dcd3bf; border-radius: 4px;
+      font-size: 13px; margin-bottom: 14px; font-family: inherit;
+    }
+
+    .mem-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mem-table th {
+      background: #f9fafb; padding: 8px 10px;
+      text-align: left; font-weight: 600; font-size: 10px;
+      color: #807968; border-bottom: 1px solid #dcd3bf;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .mem-table td { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; }
+    .mem-table tr:hover { background: #fafbfc; cursor: pointer; }
+    .mem-table tr.selected { background: #fef5e7; }
+
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #8a3e2a, #b66f5a);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 600; font-size: 13px;
+      vertical-align: middle; margin-right: 10px;
+    }
+
+    .tag {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 2px; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .tag.active { background: #d1e7dd; color: #0f5132; }
+    .tag.inactive { background: #f3f4f6; color: #6b7280; }
+    .tag.vip { background: #fef3c7; color: #92400e; }
+
+    .detail-panel .empty {
+      text-align: center; padding: 80px 20px; color: #9ca3af; font-size: 13px;
+    }
+
+    .detail-header {
+      display: flex; gap: 16px; padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb; margin-bottom: 16px;
+    }
+    .detail-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #8a3e2a, #b66f5a);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 600; font-size: 20px;
+    }
+    .detail-name {
+      font-family: "Noto Serif TC", serif; font-size: 17px;
+      font-weight: 500; color: #1c1a17; margin-bottom: 4px;
+    }
+    .detail-uid {
+      font-family: monospace; font-size: 11px; color: #9ca3af;
+    }
+
+    .detail-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-bottom: 20px;
+    }
+    .detail-stat {
+      background: #f9fafb; padding: 10px; border-radius: 4px; text-align: center;
+    }
+    .detail-stat .v {
+      font-family: "Cormorant Garamond", serif; font-style: italic;
+      font-size: 22px; color: #8a3e2a;
+    }
+    .detail-stat .l { font-size: 9px; color: #807968; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .msg-compose {
+      background: #f9fafb; padding: 14px; border-radius: 6px;
+      margin-bottom: 14px;
+    }
+    .msg-compose label {
+      display: block; font-size: 11px; color: #807968;
+      margin-bottom: 6px; font-weight: 600; letter-spacing: 0.08em;
+    }
+    .msg-compose textarea {
+      width: 100%; min-height: 70px; padding: 10px;
+      border: 1px solid #dcd3bf; border-radius: 4px;
+      font-family: inherit; font-size: 13px; resize: vertical;
+    }
+    .msg-compose .actions {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .msg-compose button {
+      padding: 10px 16px; border: none; border-radius: 4px;
+      font-weight: 600; font-size: 12px; cursor: pointer;
+      font-family: inherit; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .msg-compose .btn-send { background: #06C755; color: #fff; flex: 1; }
+    .msg-compose .btn-template { background: #fff; color: #1c1a17; border: 1px solid #dcd3bf; }
+
+    .broadcast-section {
+      background: #fef3c7; border: 1px solid #fde68a;
+      border-radius: 8px; padding: 16px; margin-top: 14px;
+    }
+    .broadcast-section h3 {
+      font-size: 13px; color: #92400e; margin-bottom: 8px;
+      font-weight: 700; letter-spacing: 0.05em;
+    }
+    .broadcast-section p {
+      font-size: 11px; color: #92400e; line-height: 1.7; margin-bottom: 12px;
+    }
+
+    .log {
+      margin-top: 14px; padding: 10px;
+      background: #ecfdf5; border-radius: 6px;
+      font-size: 12px; color: #065f46; line-height: 1.7;
+      border: 1px solid #a7f3d0; display: none;
+    }
+    .log.show { display: block; }
+
+    .api-note {
+      margin-top: 20px; padding: 16px;
+      background: #1f2937; color: #e5e7eb; border-radius: 6px;
+      font-size: 11px; line-height: 1.8;
+    }
+    .api-note h4 { color: #fbbf24; margin-bottom: 8px; font-size: 12px; }
+    .api-note code { background: #111827; padding: 2px 6px; border-radius: 3px; color: #fbbf24; }
+  </style>
+</head>
+<body>
+
+  <div class="mem-wrap">
+    <div class="mem-header">
+      <h1>LINE 會員管理・訊息推播</h1>
+      <p>Messaging API · Broadcast · Individual Message</p>
+      <span class="oa-tag" id="oaTag">魚光窯烤｜LINE@</span>
+    </div>
+
+    <div class="toolbar">
+      <a href="index.html">← 遊客端</a>
+      <a href="admin.html">🛠️ 店家資料</a>
+      <a href="dashboard.html">📊 營運儀表板</a>
+      <a href="verify.html">✅ 核銷後台</a>
+      <a href="richmenu.html">🎨 Rich Menu 底圖</a>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-box"><div class="v" id="statTotal">0</div><div class="l">總會員數</div></div>
+      <div class="stat-box"><div class="v" id="statActive">0</div><div class="l">本月活躍</div></div>
+      <div class="stat-box"><div class="v" id="statCheckins">0</div><div class="l">打卡次數</div></div>
+      <div class="stat-box"><div class="v" id="statRedeemed">0</div><div class="l">麵包兌換</div></div>
+    </div>
+
+    <div class="mem-layout">
+      <!-- 左：會員清單 -->
+      <div class="panel">
+        <h2>
+          會員清單
+          <span class="meta" id="memCount">0 members</span>
+        </h2>
+        <input type="text" class="search-bar" id="searchInput" placeholder="🔍 搜尋會員名字或 User ID">
+
+        <table class="mem-table">
+          <thead>
+            <tr>
+              <th>名字</th>
+              <th>點數</th>
+              <th>打卡</th>
+              <th>狀態</th>
+              <th>加入時間</th>
+            </tr>
+          </thead>
+          <tbody id="memTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- 右：會員詳情 + 訊息 -->
+      <div class="panel detail-panel">
+        <h2>
+          訊息中心
+          <span class="meta" id="selectedName">未選擇會員</span>
+        </h2>
+
+        <div id="detailArea" class="empty">← 請從左側選擇會員</div>
+
+        <!-- 推播群發 -->
+        <div class="broadcast-section">
+          <h3>📣 全體推播</h3>
+          <p>同時發送訊息給所有會員（<strong id="broadcastCount">0</strong> 人）。<br>LINE Messaging API 每月免費額度 200 則推播。</p>
+          <div class="msg-compose" style="background:#fff;margin:0">
+            <label>推播內容</label>
+            <textarea id="broadcastMsg" placeholder="例：【本週限定】完成日月潭立槳體驗可獲得雙倍點數，詳情請洽官方帳號。"></textarea>
+            <div class="actions">
+              <button class="btn-template" onclick="useTemplate(1)">優惠模板</button>
+              <button class="btn-template" onclick="useTemplate(2)">通知模板</button>
+              <button class="btn-send" id="broadcastBtn">📣 推播給全體</button>
+            </div>
+          </div>
+          <div class="log" id="broadcastLog"></div>
+        </div>
+
+        <div class="api-note">
+          <h4>⚙️ 正式推播需要的設定</h4>
+          1. LINE Developers Console 建 <code>Messaging API Channel</code>（跟 LIFF 的 LINE Login Channel 不一樣）<br>
+          2. 將 Channel 綁到 LINE 官方帳號<br>
+          3. 取得 <code>Channel Access Token</code><br>
+          4. 後端伺服器用 POST 呼叫 <code>https://api.line.me/v2/bot/message/broadcast</code><br>
+          5. 在 <code>.env</code> 填入 Token 即可推播
+          <br><br>
+          <strong style="color:#fbbf24">目前 Demo 模式：</strong>會員資料是模擬的，推播按鈕會記錄於右下 log 方便展示流程。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    // ============================================
+    // 模擬會員資料（正式版從 Messaging API Webhook 收到 follow event 時存入後端）
+    // ============================================
+    const MOCK_MEMBERS = [
+      { uid: 'U1a2b3c4d5', name: '林明偉', pts: 12, cnt: 7, status: 'active', tag: 'vip', joinAt: '2026-04-01', phone: '0912-345-678' },
+      { uid: 'U2b3c4d5e6', name: '陳凱哥', pts: 8, cnt: 5, status: 'active', tag: null, joinAt: '2026-04-03', phone: '0923-456-789' },
+      { uid: 'U3c4d5e6f7', name: '王大衛', pts: 20, cnt: 11, status: 'active', tag: 'vip', joinAt: '2026-04-05', phone: '0934-567-890' },
+      { uid: 'U4d5e6f7g8', name: '李佳穎', pts: 5, cnt: 3, status: 'active', tag: null, joinAt: '2026-04-08', phone: '0945-678-901' },
+      { uid: 'U5e6f7g8h9', name: '張雅婷', pts: 15, cnt: 8, status: 'active', tag: null, joinAt: '2026-04-10', phone: '0956-789-012' },
+      { uid: 'U6f7g8h9i0', name: '吳士榮', pts: 3, cnt: 2, status: 'inactive', tag: null, joinAt: '2026-04-11', phone: '0967-890-123' },
+      { uid: 'U7g8h9i0j1', name: '蔡美玉', pts: 10, cnt: 6, status: 'active', tag: null, joinAt: '2026-04-12', phone: '0978-901-234' },
+      { uid: 'U8h9i0j1k2', name: '周俊杰', pts: 22, cnt: 13, status: 'active', tag: 'vip', joinAt: '2026-04-14', phone: '0989-012-345' },
+      { uid: 'U9i0j1k2l3', name: '許怡君', pts: 7, cnt: 4, status: 'active', tag: null, joinAt: '2026-04-16', phone: '0910-123-456' },
+      { uid: 'Ua0j1k2l3m4', name: '鄭偉志', pts: 0, cnt: 0, status: 'inactive', tag: null, joinAt: '2026-04-18', phone: '0921-234-567' },
+      { uid: 'Ub1k2l3m4n5', name: '黃曉慧', pts: 18, cnt: 9, status: 'active', tag: 'vip', joinAt: '2026-04-19', phone: '0932-345-678' },
+      { uid: 'Uc2l3m4n5o6', name: '劉俊達', pts: 6, cnt: 3, status: 'active', tag: null, joinAt: '2026-04-20', phone: '0943-456-789' }
+    ];
+
+    // 從實際平台的 LocalStorage 也讀取一筆（測試用戶）
+    (function mergeRealUser() {
+      const raw = localStorage.getItem('bread_points_v2');
+      if (raw) {
+        try {
+          const s = JSON.parse(raw);
+          if (s.userId && s.userId !== 'DEMO-USER') {
+            MOCK_MEMBERS.unshift({
+              uid: s.userId,
+              name: s.displayName || '測試旅人',
+              pts: (s.checkIns || []).reduce((sum, c) => sum + c.points, 0),
+              cnt: (s.checkIns || []).length,
+              status: 'active', tag: null,
+              joinAt: new Date().toISOString().split('T')[0],
+              phone: '—'
+            });
+          }
+        } catch (e) {}
+      }
+    })();
+
+    let selectedUid = null;
+    let filterText = '';
+
+    function renderStats() {
+      document.getElementById('statTotal').textContent = MOCK_MEMBERS.length;
+      document.getElementById('statActive').textContent = MOCK_MEMBERS.filter(m => m.status === 'active').length;
+      document.getElementById('statCheckins').textContent = MOCK_MEMBERS.reduce((s, m) => s + m.cnt, 0);
+      document.getElementById('statRedeemed').textContent = MOCK_MEMBERS.filter(m => m.pts >= 10).length;
+      document.getElementById('memCount').textContent = MOCK_MEMBERS.length + ' members';
+      document.getElementById('broadcastCount').textContent = MOCK_MEMBERS.filter(m => m.status === 'active').length;
+    }
+
+    function getInitial(name) { return name.slice(0, 1); }
+
+    function renderList() {
+      const filtered = filterText
+        ? MOCK_MEMBERS.filter(m => m.name.includes(filterText) || m.uid.toLowerCase().includes(filterText.toLowerCase()))
+        : MOCK_MEMBERS;
+
+      document.getElementById('memTbody').innerHTML = filtered.map(m => `
+        <tr data-uid="${m.uid}" class="${m.uid === selectedUid ? 'selected' : ''}">
+          <td>
+            <span class="avatar">${getInitial(m.name)}</span>
+            <strong>${m.name}</strong>
+            ${m.tag ? `<span class="tag ${m.tag}" style="margin-left:6px">${m.tag === 'vip' ? 'VIP' : m.tag}</span>` : ''}
+            <div style="font-size:10px;color:#9ca3af;font-family:monospace;margin-left:46px">${m.uid}</div>
+          </td>
+          <td><strong style="color:#8a3e2a">${m.pts}</strong> 點</td>
+          <td>${m.cnt} 次</td>
+          <td><span class="tag ${m.status}">${m.status === 'active' ? '活躍' : '未活躍'}</span></td>
+          <td style="font-size:11px;color:#6b7280">${m.joinAt}</td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.mem-table tbody tr').forEach(tr => {
+        tr.onclick = () => selectMember(tr.dataset.uid);
+      });
+    }
+
+    function selectMember(uid) {
+      selectedUid = uid;
+      const m = MOCK_MEMBERS.find(x => x.uid === uid);
+      if (!m) return;
+      document.getElementById('selectedName').textContent = m.name;
+
+      document.getElementById('detailArea').className = '';
+      document.getElementById('detailArea').innerHTML = `
+        <div class="detail-header">
+          <div class="detail-avatar">${getInitial(m.name)}</div>
+          <div>
+            <div class="detail-name">${m.name} ${m.tag ? `<span class="tag ${m.tag}" style="margin-left:8px">${m.tag.toUpperCase()}</span>` : ''}</div>
+            <div class="detail-uid">${m.uid}</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:4px">📞 ${m.phone}　加入於 ${m.joinAt}</div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-stat"><div class="v">${m.pts}</div><div class="l">Points</div></div>
+          <div class="detail-stat"><div class="v">${m.cnt}</div><div class="l">Check-ins</div></div>
+          <div class="detail-stat"><div class="v">${m.pts >= 10 ? '✓' : '–'}</div><div class="l">Eligible</div></div>
+        </div>
+
+        <div class="msg-compose">
+          <label>傳送私訊給 ${m.name}</label>
+          <textarea id="privateMsg" placeholder="例：您好 ${m.name}，您已累積 ${m.pts} 點${m.pts >= 10 ? '，歡迎至魚光窯烤兌換碳麵包' : '，再走 ' + (10 - m.pts) + ' 個點即可兌換碳麵包'}！"></textarea>
+          <div class="actions">
+            <button class="btn-template" onclick="fillPrivateTemplate()">問候模板</button>
+            <button class="btn-send" onclick="sendPrivate()">💬 傳送私訊</button>
+          </div>
+          <div class="log" id="privateLog"></div>
+        </div>
+      `;
+      renderList();
+    }
+
+    window.fillPrivateTemplate = () => {
+      const m = MOCK_MEMBERS.find(x => x.uid === selectedUid);
+      document.getElementById('privateMsg').value =
+        `您好 ${m.name}，感謝您參與日月潭低碳旅程！您目前已累積 ${m.pts} 點，${m.pts >= 10 ? '已可至魚光窯烤兌換碳麵包' : '再完成 ' + (10 - m.pts) + ' 個據點即可兌換專屬的碳麵包'}。期待與您在日月潭再相遇。`;
+    };
+
+    window.sendPrivate = () => {
+      const msg = document.getElementById('privateMsg').value.trim();
+      if (!msg) { alert('請輸入訊息內容'); return; }
+      const m = MOCK_MEMBERS.find(x => x.uid === selectedUid);
+      const log = document.getElementById('privateLog');
+      log.className = 'log show';
+      log.innerHTML = `
+        ✓ <strong>Demo 模式・模擬推送成功</strong><br>
+        收件人：${m.name}（${m.uid}）<br>
+        送出時間：${new Date().toLocaleString('zh-TW')}<br>
+        ─────<br>
+        ${msg}<br>
+        ─────<br>
+        <span style="color:#065f46;font-size:10px">實際部署時，此按鈕會呼叫 LINE Messaging API：<code>POST /v2/bot/message/push</code></span>
+      `;
+    };
+
+    window.useTemplate = (type) => {
+      const t = document.getElementById('broadcastMsg');
+      if (type === 1) t.value = '【本週限定 🌿】完成日月潭電動遊湖船打卡，可獲得雙倍點數！於 4/28 前掃碼即享優惠，快來參與低碳旅遊吧。';
+      if (type === 2) t.value = '【活動通知】魚光窯烤碳麵包本週三（4/24）出爐，集滿 10 點的旅人可至門市兌換。詳情請點擊選單「兌換麵包」。';
+    };
+
+    document.getElementById('broadcastBtn').onclick = () => {
+      const msg = document.getElementById('broadcastMsg').value.trim();
+      if (!msg) { alert('請輸入推播內容'); return; }
+      const count = MOCK_MEMBERS.filter(m => m.status === 'active').length;
+      if (!confirm(`確定要推播給 ${count} 位活躍會員嗎？\n\n內容：${msg.substring(0, 50)}${msg.length > 50 ? '...' : ''}`)) return;
+      const log = document.getElementById('broadcastLog');
+      log.className = 'log show';
+      log.innerHTML = `
+        ✓ <strong>Demo 模式・模擬推播成功</strong><br>
+        收件人：${count} 位活躍會員<br>
+        送出時間：${new Date().toLocaleString('zh-TW')}<br>
+        ─────<br>
+        ${msg}<br>
+        ─────<br>
+        <span style="font-size:10px">實際部署時呼叫 <code>POST /v2/bot/message/broadcast</code>（每月 200 則免費額度）</span>
+      `;
+    };
+
+    document.getElementById('searchInput').oninput = (e) => {
+      filterText = e.target.value;
+      renderList();
+    };
+
+    // 讀取 LINE OA 名稱
+    const liffCfg = JSON.parse(localStorage.getItem('bread_liff_config') || '{}');
+    if (liffCfg.oaName) {
+      document.getElementById('oaTag').textContent = liffCfg.oaName + '｜LINE@';
+    }
+
+    renderStats();
+    renderList();
+  </script>
+</body>
+</html>
