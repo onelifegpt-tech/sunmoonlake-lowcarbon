@@ -746,29 +746,154 @@ function render() {
     return;
   }
 
-  // 綠色地圖 → 全屏模式（無 header、無 tabs，只有地圖 + 浮動返回）
-  if (currentTab === 'map') {
-    renderMapFullscreen();
-    return;
-  }
+  // 沉浸式模式（獨立頁面，從 LINE Rich Menu 進來，按 ✕ 回 LINE）
+  if (currentTab === 'map')    { renderMapFullscreen(); return; }
+  if (currentTab === 'home')   { renderHomeFullscreen(); return; }
+  if (currentTab === 'reward') { renderRewardFullscreen(); return; }
+  if (currentTab === 'history'){ renderHistoryFullscreen(); return; }
+  if (currentTab === 'news')   { renderNewsFullscreen(); return; }
 
-  let body = '';
-  if (currentTab === 'home')    body = renderHome();
-  else if (currentTab === 'reward') body = renderReward();
-  else if (currentTab === 'history') body = renderHistory();
-  else if (currentTab === 'news') body = renderNews();
+  // 備援（不應發生）
+  document.getElementById('app').innerHTML = '';
+}
 
-  document.getElementById('app').innerHTML = `
-    <div class="app-header">
-      <div class="brand-eyebrow">Sun Moon Lake</div>
-      <h1>日月潭低碳旅遊手帖</h1>
-      <div class="subtitle">A Low-Carbon Journal</div>
+// ===== 沉浸式通用殼層（close button + title） =====
+function immersiveShell({ eyebrow, title, body, footer = '' }) {
+  return `
+    <div class="immersive-page">
+      <button class="imm-close" id="immClose" aria-label="關閉">
+        <span class="imm-close-icon">✕</span>
+      </button>
+      <div class="imm-title-pill">
+        <div class="imm-title-eyebrow">${eyebrow}</div>
+        <div class="imm-title-label">${title}</div>
+      </div>
+      <div class="imm-body">
+        ${body}
+      </div>
+      ${footer}
     </div>
-    ${renderProgress()}
-    ${renderTabs()}
-    <div class="content">${body}</div>
+  `;
+}
+
+function bindImmersiveClose() {
+  const btn = document.getElementById('immClose');
+  if (!btn) return;
+  btn.onclick = () => {
+    if (window.liff && typeof liff.closeWindow === 'function' && liff.isInClient && liff.isInClient()) {
+      try { liff.closeWindow(); return; } catch (e) {}
+    }
+    if (window.history.length > 1 && document.referrer) window.history.back();
+    else window.close();
+  };
+}
+
+// ===== 集碳行動・沉浸式 =====
+function renderHomeFullscreen() {
+  const { earned, balance } = DB.getBalance(state);
+  const co2 = DB.getCO2(state);
+  const locs = getActiveLocations();
+  const checkedCount = state.checkIns.length;
+
+  // 浮動底部進度條
+  const progressFooter = `
+    <div class="imm-progress-footer">
+      <div class="ipf-row">
+        <div class="ipf-stat">
+          <span class="ipf-value">${balance}</span>
+          <span class="ipf-label">可用點數</span>
+        </div>
+        <div class="ipf-divider"></div>
+        <div class="ipf-stat">
+          <span class="ipf-value">${checkedCount}<span class="ipf-sub">/${locs.length}</span></span>
+          <span class="ipf-label">已打卡</span>
+        </div>
+        <div class="ipf-divider"></div>
+        <div class="ipf-stat">
+          <span class="ipf-value">${co2.toFixed(1)}</span>
+          <span class="ipf-label">減碳 kg</span>
+        </div>
+      </div>
+    </div>
   `;
 
+  let body;
+  if (currentCategory === 'all') {
+    body = renderCategoryTiles();
+  } else {
+    body = renderCategoryDetail(currentCategory);
+  }
+
+  document.getElementById('app').innerHTML = immersiveShell({
+    eyebrow: 'Collect · 集碳行動',
+    title: currentCategory === 'all' ? '選擇類別' : CATEGORIES[currentCategory]?.label || '',
+    body,
+    footer: progressFooter
+  });
+
+  bindImmersiveClose();
+  bindEvents();
+}
+
+// ===== 兌換麵包・沉浸式 =====
+function renderRewardFullscreen() {
+  document.getElementById('app').innerHTML = immersiveShell({
+    eyebrow: 'Redeem · 兌換麵包',
+    title: '碳麵包',
+    body: renderReward()
+  });
+  bindImmersiveClose();
+  bindEvents();
+}
+
+// ===== 我的點數・沉浸式 =====
+function renderHistoryFullscreen() {
+  const { earned, balance, spent } = DB.getBalance(state);
+  const co2 = DB.getCO2(state);
+  const checkedCount = state.checkIns.length;
+  const locs = getActiveLocations();
+
+  const summary = `
+    <div class="imm-history-summary">
+      <div class="ihs-row">
+        <div class="ihs-stat">
+          <div class="ihs-value">${balance}</div>
+          <div class="ihs-label">可用點數</div>
+        </div>
+        <div class="ihs-stat">
+          <div class="ihs-value">${earned}</div>
+          <div class="ihs-label">累積獲得</div>
+        </div>
+        <div class="ihs-stat">
+          <div class="ihs-value">${spent}</div>
+          <div class="ihs-label">已兌換</div>
+        </div>
+      </div>
+      <div class="ihs-meta">
+        <span>已打卡 ${checkedCount} / ${locs.length} 處</span>
+        <span class="ihs-dot">·</span>
+        <span>減碳 ${co2.toFixed(1)} kg CO₂</span>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('app').innerHTML = immersiveShell({
+    eyebrow: 'My Points · 我的點數',
+    title: '旅程足跡',
+    body: summary + renderHistory()
+  });
+  bindImmersiveClose();
+  bindEvents();
+}
+
+// ===== 最新消息・沉浸式 =====
+function renderNewsFullscreen() {
+  document.getElementById('app').innerHTML = immersiveShell({
+    eyebrow: 'Latest · 最新消息',
+    title: 'Journal',
+    body: renderNews()
+  });
+  bindImmersiveClose();
   bindEvents();
 }
 
