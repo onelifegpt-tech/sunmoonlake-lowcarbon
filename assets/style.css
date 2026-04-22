@@ -3,55 +3,78 @@
    靈感：日系旅遊手帖 × 永續品牌視覺
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap');
 
 :root {
-  /* 主色：深墨綠 + 暖金 */
-  --brand-ink:    #142520;    /* 深墨綠，主文字 */
-  --brand-moss:   #2f5a4a;    /* 苔綠，按鈕與連結 */
-  --brand-moss-d: #234538;    /* 苔綠深 */
-  --brand-accent: #c9a876;    /* 金棕，主點綴（麵包色） */
-  --brand-accent-d: #a88a5d;
+  /* ——————————————————————————————————
+     編輯系色盤｜Aesop × Kinfolk × 茶道美學
+     以「紙、墨、茶、陶」為靈感
+     —————————————————————————————————— */
 
-  /* 中性色階 */
-  --surface:   #faf7f2;       /* 米白主背景 */
-  --surface-2: #f3efe7;       /* 次背景 */
-  --card:      #ffffff;
-  --line:      #e8e2d5;       /* 分隔線 */
-  --line-soft: #f0ebe0;
+  /* 紙：暖灰米，作為主畫布 */
+  --paper:    #e8e2d3;
+  --paper-2:  #ddd4be;
+  --paper-3:  #cdc2a8;
 
-  --ink-900: #1a1a1a;
-  --ink-700: #2d2d2d;
-  --ink-500: #5a5a5a;
-  --ink-400: #8a8a8a;
-  --ink-300: #b5b5b5;
+  /* 墨：溫暖炭黑（無綠色傾向） */
+  --ink:      #1c1a17;
+  --ink-2:    #2e2b26;
+  --ink-3:    #4a453d;
+  --ink-4:    #807968;
+  --ink-5:    #a49d89;
+  --ink-6:    #c6bfad;
 
-  /* 功能色 */
-  --success: #3d7d5a;
-  --warning: #c4902e;
-  --danger:  #b04545;
-  --info:    #3a5f8f;
+  /* 卡片 / 容器 */
+  --card:      #faf7ef;
+  --card-2:    #f2ede0;
 
-  /* 類別色（降飽和版） */
-  --cat-exp:  #5a8a85;
-  --cat-stay: #7a91b3;
-  --cat-rest: #c99a6b;
-  --cat-land: #6a9578;
+  /* 茶：沉穩山茶綠（稀有點綴、表達「永續」） */
+  --tea:       #4a5a42;
+  --tea-d:     #384531;
 
-  /* 陰影 */
-  --shadow-1: 0 1px 3px rgba(20, 37, 32, 0.04), 0 1px 2px rgba(20, 37, 32, 0.06);
-  --shadow-2: 0 4px 12px rgba(20, 37, 32, 0.06), 0 2px 4px rgba(20, 37, 32, 0.04);
-  --shadow-3: 0 10px 30px rgba(20, 37, 32, 0.08), 0 4px 12px rgba(20, 37, 32, 0.06);
+  /* 陶：克制的磚紅，作為 accent／CTA 亮點 */
+  --clay:      #8a3e2a;
+  --clay-d:    #6e3122;
+  --clay-l:    #b66f5a;
 
-  /* 幾何 */
-  --radius-sm: 6px;
-  --radius:    10px;
-  --radius-lg: 16px;
+  /* 描邊 / 分隔線 */
+  --line:      #c9beb0;
+  --line-soft: #dcd3bf;
+
+  /* 功能色（全部降到近 ink 色調） */
+  --success: #4a5a42;
+  --warning: #8e6a2e;
+  --danger:  #8a3e2a;
+  --info:    #3f5270;
+
+  /* 陰影（更軟、更淡） */
+  --shadow-1: 0 1px 2px rgba(28, 26, 23, 0.05);
+  --shadow-2: 0 2px 10px rgba(28, 26, 23, 0.06);
+  --shadow-3: 0 8px 30px rgba(28, 26, 23, 0.10);
+
+  /* 幾何（盡量方正） */
+  --radius-sm: 2px;
+  --radius:    4px;
+  --radius-lg: 8px;
 
   /* 字體 */
-  --font-serif: "Noto Serif TC", "Songti TC", serif;
+  --font-serif: "Noto Serif TC", "Cormorant Garamond", "Songti TC", serif;
   --font-sans:  "Inter", -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
   --font-mono:  "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  /* ——— 舊變數相容層（其他元件還在用） ——— */
+  --brand-ink:     var(--ink);
+  --brand-moss:    var(--tea);
+  --brand-moss-d:  var(--tea-d);
+  --brand-accent:  var(--clay);
+  --brand-accent-d: var(--clay-d);
+  --surface:       var(--paper);
+  --surface-2:     var(--card-2);
+  --ink-900:       var(--ink);
+  --ink-700:       var(--ink-2);
+  --ink-500:       var(--ink-3);
+  --ink-400:       var(--ink-4);
+  --ink-300:       var(--ink-5);
 }
 
 * {
@@ -75,6 +98,11 @@ html, body {
 /* 去除預設 button 樣式 */
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, select, textarea { font-family: inherit; }
+
+html, body {
+  background: var(--paper);
+  color: var(--ink-2);
+}
 
 /* ============================================
    LINE 狀態列（極簡）
@@ -104,51 +132,62 @@ input, select, textarea { font-family: inherit; }
 @keyframes linePulse { 50% { opacity: 0.25; } }
 
 /* ============================================
-   Header（深墨綠 Hero）
+   Header（淺色紙面 · 極簡）
    ============================================ */
 .app-header {
-  background: var(--brand-ink);
-  color: var(--surface);
-  padding: 28px 24px 32px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 32px 24px 24px;
   position: sticky; top: 0; z-index: 10;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--line);
 }
 .app-header h1 {
   font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--surface);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  line-height: 1.3;
 }
 .app-header .subtitle {
-  font-size: 11px;
-  color: var(--brand-accent);
-  margin-top: 6px;
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-4);
+  margin-top: 4px;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 500;
+  font-weight: 400;
 }
 
-/* 品牌標記（頂端小 eyebrow） */
 .brand-eyebrow {
   font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--brand-accent);
+  letter-spacing: 0.3em;
+  color: var(--clay);
   text-transform: uppercase;
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: 10px;
+  font-weight: 500;
+  display: inline-block;
+}
+.brand-eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--clay);
+  vertical-align: middle;
+  margin-left: 8px;
 }
 
 /* ============================================
-   進度卡（去強色，低調質感）
+   進度卡（純紙面・無框）
    ============================================ */
 .progress-card {
-  background: var(--card);
-  margin: 20px 20px 0;
-  padding: 24px 22px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
+  background: transparent;
+  margin: 24px 20px 0;
+  padding: 24px 0 20px;
+  border: none;
+  border-bottom: 1px solid var(--line-soft);
+  box-shadow: none;
 }
 
 .progress-stats {
@@ -166,78 +205,80 @@ input, select, textarea { font-family: inherit; }
 .stat-item:last-child { border-right: none; }
 
 .stat-value {
-  font-family: var(--font-serif);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--brand-ink);
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--ink);
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
 }
 
 .stat-label {
-  font-size: 10px;
-  color: var(--ink-400);
-  margin-top: 8px;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  color: var(--ink-4);
+  margin-top: 10px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   font-weight: 500;
 }
 
 .progress-bar {
-  height: 3px;
+  height: 1px;
   background: var(--line-soft);
-  border-radius: 2px;
   overflow: hidden;
+  margin-top: 18px;
 }
 .progress-fill {
   height: 100%;
-  background: var(--brand-moss);
+  background: var(--clay);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-text {
-  font-size: 11px;
-  color: var(--ink-400);
+  font-size: 10px;
+  color: var(--ink-4);
   margin-top: 10px;
   text-align: center;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 /* ============================================
-   Tabs（極簡 underline）
+   Tabs（極簡 · 細線）
    ============================================ */
 .tabs {
   display: flex;
-  background: var(--surface);
-  margin: 24px 0 0;
-  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  margin: 28px 0 0;
+  border-bottom: 1px solid var(--line-soft);
   padding: 0 8px;
 }
 .tab {
   flex: 1;
-  padding: 14px 0 12px;
+  padding: 16px 0 14px;
   text-align: center;
-  font-size: 13px;
-  color: var(--ink-400);
+  font-size: 12px;
+  color: var(--ink-4);
   cursor: pointer;
   position: relative;
-  letter-spacing: 0.05em;
-  font-weight: 500;
-  transition: color 0.2s;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+  transition: color 0.25s;
 }
 .tab::after {
   content: '';
   position: absolute;
-  bottom: -1px; left: 20%; right: 20%;
-  height: 2px;
+  bottom: -1px; left: 30%; right: 30%;
+  height: 1px;
   background: transparent;
-  transition: background 0.2s;
+  transition: background 0.25s;
 }
 .tab.active {
-  color: var(--brand-ink);
-  font-weight: 600;
+  color: var(--ink);
+  font-weight: 500;
 }
-.tab.active::after { background: var(--brand-ink); }
+.tab.active::after { background: var(--ink); left: 25%; right: 25%; }
 
 /* ============================================
    Content
@@ -248,22 +289,23 @@ input, select, textarea { font-family: inherit; }
 
 .section-title {
   font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--brand-ink);
-  margin: 4px 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 4px 0 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  letter-spacing: 0.03em;
+  gap: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .section-title::before {
   content: '';
   display: inline-block;
-  width: 18px;
+  width: 24px;
   height: 1px;
-  background: var(--brand-accent);
+  background: var(--clay);
 }
 
 /* ============================================
@@ -280,60 +322,63 @@ input, select, textarea { font-family: inherit; }
 
 .cat-chip {
   flex-shrink: 0;
-  padding: 7px 16px;
+  padding: 6px 18px;
   border: 1px solid var(--line);
-  background: var(--card);
-  border-radius: 30px;
-  font-size: 12px;
-  color: var(--ink-500);
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  transition: all 0.2s;
+  background: transparent;
+  border-radius: 1px;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  transition: all 0.25s;
 }
+.cat-chip:hover { border-color: var(--ink); color: var(--ink); }
 .cat-chip.active {
-  background: var(--brand-ink);
-  color: var(--surface);
-  border-color: var(--brand-ink);
-  font-weight: 600;
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 500;
 }
 
 /* ============================================
-   地點卡（精緻卡片）
+   地點卡（極簡線框 · hairline）
    ============================================ */
 .location-card {
   background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  margin-bottom: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 1px;
+  padding: 20px 22px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  transition: all 0.2s;
+  gap: 20px;
+  transition: all 0.25s ease;
   cursor: pointer;
 }
 .location-card:hover {
-  border-color: var(--brand-accent);
-  box-shadow: var(--shadow-2);
-  transform: translateY(-1px);
+  border-color: var(--ink-4);
+  background: var(--card);
 }
-.location-card:active { transform: translateY(0); }
+.location-card:active { background: var(--card-2); }
 .location-card.checked {
-  background: var(--surface-2);
-  opacity: 0.75;
+  background: transparent;
+  border-color: var(--line-soft);
+  opacity: 0.5;
 }
 .location-card.checked .location-name {
-  color: var(--ink-400);
+  color: var(--ink-4);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.5px;
 }
 
 .location-icon {
-  width: 46px; height: 46px;
-  border-radius: var(--radius-sm);
+  width: 42px; height: 42px;
+  border-radius: 1px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   flex-shrink: 0;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
+  background: var(--card-2);
+  border: 1px solid var(--line-soft);
 }
 
 .location-info { flex: 1; min-width: 0; }
@@ -341,17 +386,18 @@ input, select, textarea { font-family: inherit; }
 .location-name {
   font-family: var(--font-serif);
   font-size: 15px;
-  font-weight: 600;
-  color: var(--brand-ink);
-  margin-bottom: 3px;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
 }
 
 .location-addr {
-  font-size: 11px;
-  color: var(--ink-400);
-  letter-spacing: 0.02em;
-  margin-bottom: 8px;
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
 .location-meta {
@@ -361,131 +407,141 @@ input, select, textarea { font-family: inherit; }
 }
 
 .badge {
-  padding: 3px 9px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  background: var(--surface-2);
-  color: var(--ink-500);
+  padding: 2px 8px;
+  border-radius: 1px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  background: transparent;
+  color: var(--ink-3);
   border: 1px solid var(--line);
+  text-transform: uppercase;
 }
 .badge.points {
-  background: transparent;
-  color: var(--brand-moss);
-  border-color: var(--brand-moss);
+  color: var(--clay);
+  border-color: var(--clay);
 }
 .badge.co2 {
-  background: transparent;
-  color: var(--info);
-  border-color: #c7d3e5;
+  color: var(--tea);
+  border-color: var(--tea);
 }
 .badge.photo {
-  background: transparent;
-  color: var(--warning);
-  border-color: #e8d5a8;
+  color: var(--ink-3);
+  border-color: var(--line);
 }
 .badge.qr {
-  background: transparent;
-  color: var(--info);
-  border-color: #c7d3e5;
+  color: var(--ink-3);
+  border-color: var(--line);
 }
 
 .location-status {
-  font-size: 18px;
-  color: var(--ink-300);
+  font-size: 14px;
+  color: var(--ink-5);
+  letter-spacing: 0.2em;
 }
 
 /* ============================================
-   兌換卡片
+   兌換卡片（紙面 · 磚紅線細條）
    ============================================ */
 .reward-card {
   background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 26px 22px;
+  border: 1px solid var(--line-soft);
+  border-radius: 1px;
+  padding: 32px 28px;
   margin-bottom: 14px;
   position: relative;
   overflow: hidden;
 }
-.reward-card.locked { opacity: 0.55; }
+.reward-card.locked { opacity: 0.5; }
 
 .reward-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--brand-accent);
+  top: 0; left: 28px;
+  width: 40px;
+  height: 1px;
+  background: var(--clay);
 }
 
 .reward-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  padding-top: 8px;
 }
-.reward-icon { font-size: 40px; }
+.reward-icon { font-size: 32px; }
 .reward-name {
   font-family: var(--font-serif);
   font-size: 17px;
-  font-weight: 600;
-  color: var(--brand-ink);
-  margin-bottom: 4px;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: 0.06em;
 }
 .reward-desc {
   font-size: 12px;
-  color: var(--ink-400);
-  line-height: 1.6;
+  color: var(--ink-3);
+  line-height: 1.8;
   max-width: 72%;
+  letter-spacing: 0.04em;
 }
 .reward-points {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--brand-ink);
-  letter-spacing: -0.02em;
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--clay);
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 .reward-points::after {
   content: ' pts';
   font-family: var(--font-sans);
-  font-size: 10px;
-  color: var(--ink-400);
+  font-style: normal;
+  font-size: 9px;
+  color: var(--ink-4);
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 /* ============================================
-   按鈕
+   按鈕（細框 · 字距放大）
    ============================================ */
 .btn {
   width: 100%;
-  padding: 14px 20px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  transition: all 0.2s;
+  padding: 15px 20px;
+  border-radius: 1px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  transition: all 0.25s ease;
   text-transform: uppercase;
   font-family: var(--font-sans);
 }
 .btn-primary {
-  background: var(--brand-ink);
-  color: var(--surface);
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
 }
-.btn-primary:hover { background: var(--brand-moss); }
+.btn-primary:hover {
+  background: var(--clay);
+  border-color: var(--clay);
+}
 .btn-primary:active { transform: scale(0.99); }
 .btn-primary:disabled {
-  background: var(--line);
-  color: var(--ink-400);
+  background: transparent;
+  color: var(--ink-5);
+  border-color: var(--line);
   cursor: not-allowed;
 }
 .btn-outline {
   background: transparent;
-  color: var(--brand-ink);
-  border: 1px solid var(--brand-ink);
+  color: var(--ink);
+  border: 1px solid var(--ink);
 }
-.btn-outline:hover { background: var(--brand-ink); color: var(--surface); }
+.btn-outline:hover { background: var(--ink); color: var(--paper); }
 
 /* ============================================
    Modal
@@ -563,98 +619,115 @@ input, select, textarea { font-family: inherit; }
 .reset-link:hover { color: var(--ink-500); }
 
 /* ============================================
-   歡迎頁（高質感 Hero）
+   歡迎頁（紙面 Hero · 克制留白）
    ============================================ */
-.welcome { min-height: 100vh; background: var(--surface); }
+.welcome { min-height: 100vh; background: var(--paper); }
 
 .welcome-hero {
-  background: var(--brand-ink);
-  color: var(--surface);
-  padding: 70px 28px 60px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 80px 32px 40px;
   text-align: left;
   position: relative;
-  overflow: hidden;
-}
-.welcome-hero::before {
-  content: '';
-  position: absolute;
-  top: -50%; right: -20%;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(201, 168, 118, 0.08) 0%, transparent 60%);
-  pointer-events: none;
 }
 
 .welcome-hero .eyebrow {
   font-size: 10px;
   letter-spacing: 0.3em;
-  color: var(--brand-accent);
+  color: var(--clay);
   text-transform: uppercase;
-  margin-bottom: 18px;
-  font-weight: 600;
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+.welcome-hero .eyebrow::before {
+  content: '';
   display: inline-block;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--brand-accent);
+  width: 20px;
+  height: 1px;
+  background: var(--clay);
+  vertical-align: middle;
+  margin-right: 12px;
 }
 .welcome-hero h1 {
   font-family: var(--font-serif);
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.35;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.4;
   letter-spacing: 0.02em;
-  margin-bottom: 14px;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+.welcome-hero h1 em {
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--clay);
+  display: block;
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
 }
 .welcome-hero p {
   font-size: 13px;
-  color: rgba(250, 247, 242, 0.75);
-  line-height: 1.75;
-  letter-spacing: 0.05em;
+  color: var(--ink-3);
+  line-height: 1.95;
+  letter-spacing: 0.06em;
   max-width: 320px;
+  margin-bottom: 0;
+}
+
+.welcome-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 0 32px;
 }
 
 .welcome-steps {
-  padding: 40px 28px 20px;
+  padding: 32px 32px 16px;
 }
 
 .welcome-step {
   display: flex;
-  gap: 18px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
+  gap: 24px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line-soft);
 }
 .welcome-step:last-child { border-bottom: none; }
 
 .ws-num {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--brand-accent);
-  width: 32px;
+  font-family: "Cormorant Garamond", var(--font-serif);
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--clay);
+  width: 28px;
   flex-shrink: 0;
   line-height: 1;
-  padding-top: 3px;
+  padding-top: 4px;
+  letter-spacing: 0.02em;
 }
 
 .ws-body { flex: 1; }
 .ws-title {
   font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--brand-ink);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
   margin-bottom: 6px;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
 }
 .ws-desc {
   font-size: 12px;
-  color: var(--ink-400);
-  line-height: 1.7;
-  letter-spacing: 0.03em;
+  color: var(--ink-3);
+  line-height: 1.8;
+  letter-spacing: 0.04em;
 }
 
 .welcome-actions {
-  padding: 20px 28px 48px;
+  padding: 16px 32px 56px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* ============================================
