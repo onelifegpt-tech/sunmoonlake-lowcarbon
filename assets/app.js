@@ -122,32 +122,95 @@ function renderCategoryFilter() {
   `;
 }
 
-// ===== 集點地圖（4 類地點列表） =====
+// ===== 集碳行動：兩層式（先類別大卡 → 點進去看地點）=====
 function renderHome() {
-  const locs = getActiveLocations();
-  const filtered = currentCategory === 'all' ? locs : locs.filter(l => l.category === currentCategory);
+  // 第一層：尚未選類別 → 顯示 4 類大卡
+  if (currentCategory === 'all') {
+    return renderCategoryTiles();
+  }
+  // 第二層：已選某類別 → 顯示該類別所有地點
+  return renderCategoryDetail(currentCategory);
+}
 
-  const grouped = {};
-  filtered.forEach(l => {
-    if (!grouped[l.category]) grouped[l.category] = [];
-    grouped[l.category].push(l);
+// 類別大卡（第一層）
+function renderCategoryTiles() {
+  const locs = getActiveLocations();
+  const counts = {};
+  locs.forEach(l => { counts[l.category] = (counts[l.category] || 0) + 1; });
+
+  const checkedCounts = {};
+  state.checkIns.forEach(c => {
+    const loc = locs.find(l => l.id === c.locationId);
+    if (loc) checkedCounts[loc.category] = (checkedCounts[loc.category] || 0) + 1;
   });
 
-  const categoryOrder = ['experience', 'accommodation', 'restaurant', 'landmark'];
-  const body = categoryOrder.filter(c => grouped[c]).map(cat => {
-    const meta = CATEGORIES[cat];
-    return `
-      <div class="section-title">
-        <span>${meta.label}</span>
-        <span style="font-size:10px;color:var(--ink-4);font-weight:400;margin-left:auto;letter-spacing:0.2em">${grouped[cat].length} Locations</span>
-      </div>
-      <div class="location-list-grid">
-        ${grouped[cat].map(l => renderLocationCard(l)).join('')}
-      </div>
-    `;
-  }).join('');
+  const order = ['experience', 'accommodation', 'restaurant', 'landmark'];
+  const descriptions = {
+    experience: '立槳、獨木舟、單車、纜車、遊湖，水陸體驗全攬',
+    accommodation: '嚴選在地民宿與渡假飯店，入住即打卡累積點數',
+    restaurant: '魚光窯烤雙店、在地咖啡、湖畔餐廳，美味留痕',
+    landmark: '向山遊客中心、文武廟、慈恩塔，經典景致定格'
+  };
+  const methodDesc = {
+    experience: '掃 QR 打卡',
+    accommodation: '掃 QR 打卡',
+    restaurant: '掃 QR 打卡',
+    landmark: '拍照 AI 辨識'
+  };
 
-  return renderCategoryFilter() + body;
+  return `
+    <div class="section-title">
+      <span>Categories</span>
+      <span style="font-size:10px;color:var(--ink-4);font-weight:400;margin-left:auto;letter-spacing:0.2em">${locs.length} Locations · 4 Types</span>
+    </div>
+    <div class="cat-tiles">
+      ${order.map(cat => {
+        const meta = CATEGORIES[cat];
+        const total = counts[cat] || 0;
+        const checked = checkedCounts[cat] || 0;
+        return `
+          <div class="cat-tile" data-cat="${cat}">
+            <div class="cat-tile-head">
+              <span class="cat-tile-icon">${meta.icon}</span>
+              <span class="cat-tile-count">${checked}<span>/${total}</span></span>
+            </div>
+            <div class="cat-tile-name">${meta.label}</div>
+            <div class="cat-tile-desc">${descriptions[cat] || ''}</div>
+            <div class="cat-tile-meta">
+              <span class="cat-tile-method">${methodDesc[cat]}</span>
+              <span class="cat-tile-arrow">→</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+// 類別詳細頁（第二層）
+function renderCategoryDetail(cat) {
+  const meta = CATEGORIES[cat];
+  const locs = getActiveLocations().filter(l => l.category === cat);
+  const checked = locs.filter(l => DB.hasCheckedIn(state, l.id)).length;
+
+  return `
+    <div class="cat-back-bar">
+      <button class="cat-back-btn" data-cat="all">← 所有類別</button>
+    </div>
+
+    <div class="cat-detail-hero">
+      <div class="cat-detail-icon">${meta.icon}</div>
+      <div class="cat-detail-info">
+        <div class="cat-detail-eyebrow">${cat.toUpperCase()}</div>
+        <h2 class="cat-detail-title">${meta.label}</h2>
+        <div class="cat-detail-progress">${checked} / ${locs.length} 已打卡</div>
+      </div>
+    </div>
+
+    <div class="location-list-grid">
+      ${locs.map(l => renderLocationCard(l)).join('')}
+    </div>
+  `;
 }
 
 function renderLocationCard(l) {
@@ -683,9 +746,14 @@ function render() {
     return;
   }
 
+  // 綠色地圖 → 全屏模式（無 header、無 tabs，只有地圖 + 浮動返回）
+  if (currentTab === 'map') {
+    renderMapFullscreen();
+    return;
+  }
+
   let body = '';
   if (currentTab === 'home')    body = renderHome();
-  else if (currentTab === 'map') body = renderMapTab();
   else if (currentTab === 'reward') body = renderReward();
   else if (currentTab === 'history') body = renderHistory();
   else if (currentTab === 'news') body = renderNews();
@@ -702,11 +770,36 @@ function render() {
   `;
 
   bindEvents();
+}
 
-  // 若切到地圖 Tab，初始化 Leaflet
-  if (currentTab === 'map') {
-    setTimeout(initMap, 50);
-  }
+// ===== 綠色地圖全屏模式 =====
+function renderMapFullscreen() {
+  document.getElementById('app').innerHTML = `
+    <div class="fullscreen-map">
+      <div class="fs-map-bar">
+        <button class="fs-back-btn" id="fsBackBtn">← 返回</button>
+        <div class="fs-map-title">
+          <div class="fs-map-eyebrow">Green Map</div>
+          <div class="fs-map-label">綠色地圖</div>
+        </div>
+        <div class="fs-map-count">${getActiveLocations().length} locations</div>
+      </div>
+      <div id="greenMap" class="green-map fs"></div>
+      <div class="map-legend fs">
+        ${Object.entries(CATEGORIES).map(([id, c]) => `
+          <span class="legend-item">
+            <span class="legend-dot" style="background:${c.color}"></span>${c.icon} ${c.label}
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('fsBackBtn').onclick = () => {
+    currentTab = 'home';
+    currentCategory = 'all';
+    render();
+  };
+  setTimeout(initMap, 50);
 }
 
 function renderWelcome() {
@@ -766,6 +859,16 @@ function bindEvents() {
 
   document.querySelectorAll('.cat-chip').forEach(c => {
     c.onclick = () => { currentCategory = c.dataset.cat; render(); };
+  });
+
+  // 類別大卡（第一層 → 第二層）
+  document.querySelectorAll('.cat-tile').forEach(t => {
+    t.onclick = () => { currentCategory = t.dataset.cat; render(); };
+  });
+
+  // 類別詳情返回（第二層 → 第一層）
+  document.querySelectorAll('.cat-back-btn').forEach(b => {
+    b.onclick = () => { currentCategory = b.dataset.cat || 'all'; render(); };
   });
 
   // 地點卡：點擊依 verifyMethod 分流
