@@ -91,10 +91,12 @@ function renderHome() {
     const meta = CATEGORIES[cat];
     return `
       <div class="section-title">
-        <span class="category-chip" style="background:${meta.color}">${meta.icon} ${meta.label}</span>
-        <span style="font-size:11px;color:#888;font-weight:400;margin-left:8px">${grouped[cat].length} 個點</span>
+        <span>${meta.label}</span>
+        <span style="font-size:10px;color:var(--ink-4);font-weight:400;margin-left:auto;letter-spacing:0.2em">${grouped[cat].length} Locations</span>
       </div>
-      ${grouped[cat].map(l => renderLocationCard(l)).join('')}
+      <div class="location-list-grid">
+        ${grouped[cat].map(l => renderLocationCard(l)).join('')}
+      </div>
     `;
   }).join('');
 
@@ -666,36 +668,38 @@ function renderWelcome() {
         <div class="eyebrow">Sun Moon Lake</div>
         <h1>日月潭低碳旅遊<em>A Low-Carbon Journal</em></h1>
         <p>一本屬於旅人的手帖，<br>紀錄每一次踏訪在地的足跡，<br>以一顆碳麵包，作為結尾的印記。</p>
+
+        <div class="welcome-actions">
+          <button class="btn btn-primary" id="startBtn">展開旅程</button>
+        </div>
       </div>
 
       <div class="welcome-divider"></div>
 
-      <div class="welcome-steps">
-        <div class="welcome-step">
-          <div class="ws-num">i.</div>
-          <div class="ws-body">
-            <div class="ws-title">踏訪在地據點</div>
-            <div class="ws-desc">體驗、旅宿、餐飲、景點共 ${getActiveLocations().length} 處，皆為嚴選合作夥伴。</div>
+      <div class="welcome-right">
+        <div class="welcome-steps">
+          <div class="welcome-step">
+            <div class="ws-num">i.</div>
+            <div class="ws-body">
+              <div class="ws-title">踏訪在地據點</div>
+              <div class="ws-desc">體驗、旅宿、餐飲、景點共 ${getActiveLocations().length} 處，皆為嚴選合作夥伴。</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="ws-num">ii.</div>
+            <div class="ws-body">
+              <div class="ws-title">拍照或掃碼留痕</div>
+              <div class="ws-desc">景點類以影像辨識記錄，體驗與店家則掃描專屬 QR Code。</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="ws-num">iii.</div>
+            <div class="ws-body">
+              <div class="ws-title">集滿十點，兌換碳麵包</div>
+              <div class="ws-desc">專屬完成旅程的紀念款，非賣品，僅致贈於低碳旅人。</div>
+            </div>
           </div>
         </div>
-        <div class="welcome-step">
-          <div class="ws-num">ii.</div>
-          <div class="ws-body">
-            <div class="ws-title">拍照或掃碼留痕</div>
-            <div class="ws-desc">景點類以影像辨識記錄，體驗與店家則掃描專屬 QR Code。</div>
-          </div>
-        </div>
-        <div class="welcome-step">
-          <div class="ws-num">iii.</div>
-          <div class="ws-body">
-            <div class="ws-title">集滿十點，兌換碳麵包</div>
-            <div class="ws-desc">專屬完成旅程的紀念款，非賣品，僅致贈於低碳旅人。</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="welcome-actions">
-        <button class="btn btn-primary" id="startBtn">展開旅程</button>
       </div>
     </div>
   `;
