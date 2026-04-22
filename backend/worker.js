@@ -379,7 +379,8 @@ async function handleRichMenuInstall(request, env) {
   const accessToken = env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!accessToken) return jsonResponse({ error: 'LINE_CHANNEL_ACCESS_TOKEN not set' }, 500);
 
-  const LIFF = 'https://liff.line.me/2009871603-M3x0m8mJ';
+  // 直接指向遊客端 index.html（繞過 LIFF endpoint 設定錯誤造成誤導到 admin 的風險）
+  const SITE = 'https://onelifegpt-tech.github.io/sunmoonlake-lowcarbon/index.html';
 
   // Rich Menu 結構（6 格，大版 2500x1686）
   const richMenuDef = {
@@ -389,12 +390,12 @@ async function handleRichMenuInstall(request, env) {
     chatBarText: '日月潭低碳集點',
     areas: [
       // 上排
-      { bounds: { x: 0,    y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '綠色地圖', uri: `${LIFF}?tab=map` } },
-      { bounds: { x: 833,  y: 0,   width: 834, height: 843 }, action: { type: 'uri', label: '集碳行動', uri: `${LIFF}?tab=home` } },
-      { bounds: { x: 1667, y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '最新消息', uri: `${LIFF}?tab=news` } },
+      { bounds: { x: 0,    y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '綠色地圖', uri: `${SITE}?tab=map` } },
+      { bounds: { x: 833,  y: 0,   width: 834, height: 843 }, action: { type: 'uri', label: '集碳行動', uri: `${SITE}?tab=home` } },
+      { bounds: { x: 1667, y: 0,   width: 833, height: 843 }, action: { type: 'uri', label: '最新消息', uri: `${SITE}?tab=news` } },
       // 下排
-      { bounds: { x: 0,    y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '我的點數', uri: `${LIFF}?tab=history` } },
-      { bounds: { x: 833,  y: 843, width: 834, height: 843 }, action: { type: 'uri', label: '兌換麵包', uri: `${LIFF}?tab=reward` } },
+      { bounds: { x: 0,    y: 843, width: 833, height: 843 }, action: { type: 'uri', label: '我的點數', uri: `${SITE}?tab=history` } },
+      { bounds: { x: 833,  y: 843, width: 834, height: 843 }, action: { type: 'uri', label: '兌換麵包', uri: `${SITE}?tab=reward` } },
       { bounds: { x: 1667, y: 843, width: 833, height: 843 }, action: { type: 'message', label: '真人回覆', text: '真人回覆' } }
     ]
   };
