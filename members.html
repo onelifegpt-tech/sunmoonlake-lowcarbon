@@ -196,6 +196,7 @@
       <h1>LINE 會員管理・訊息推播</h1>
       <p>Messaging API · Broadcast · Individual Message</p>
       <span class="oa-tag" id="oaTag">魚光窯烤｜LINE@</span>
+      <span id="apiStatus" style="display:inline-block;margin-left:8px;background:#fbbf24;color:#1f2937;padding:4px 10px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.1em">未連線後端 · Demo</span>
     </div>
 
     <div class="toolbar">
@@ -276,6 +277,7 @@
   </div>
 
   <script src="assets/data.js"></script>
+  <script src="assets/api-client.js"></script>
   <script>
     // ============================================
     // 模擬會員資料（正式版從 Messaging API Webhook 收到 follow event 時存入後端）
@@ -397,21 +399,57 @@
         `您好 ${m.name}，感謝您參與日月潭低碳旅程！您目前已累積 ${m.pts} 點，${m.pts >= 10 ? '已可至魚光窯烤兌換碳麵包' : '再完成 ' + (10 - m.pts) + ' 個據點即可兌換專屬的碳麵包'}。期待與您在日月潭再相遇。`;
     };
 
-    window.sendPrivate = () => {
+    window.sendPrivate = async () => {
       const msg = document.getElementById('privateMsg').value.trim();
       if (!msg) { alert('請輸入訊息內容'); return; }
       const m = MOCK_MEMBERS.find(x => x.uid === selectedUid);
       const log = document.getElementById('privateLog');
-      log.className = 'log show';
-      log.innerHTML = `
-        ✓ <strong>Demo 模式・模擬推送成功</strong><br>
-        收件人：${m.name}（${m.uid}）<br>
-        送出時間：${new Date().toLocaleString('zh-TW')}<br>
-        ─────<br>
-        ${msg}<br>
-        ─────<br>
-        <span style="color:#065f46;font-size:10px">實際部署時，此按鈕會呼叫 LINE Messaging API：<code>POST /v2/bot/message/push</code></span>
-      `;
+      const btn = document.querySelector('.btn-send[onclick*="sendPrivate"]');
+
+      if (!LineApi.isConfigured()) {
+        log.className = 'log show';
+        log.innerHTML = `
+          ⚠️ <strong>Demo 模式（未連線後端）</strong><br>
+          收件人：${m.name}（${m.uid}）<br>
+          送出時間：${new Date().toLocaleString('zh-TW')}<br>
+          ─────<br>
+          ${msg}<br>
+          ─────<br>
+          <span style="color:#92400e;font-size:10px">要真的發送訊息，請至 admin.html 設定 Worker URL 與 Admin Token</span>
+        `;
+        log.style.background = '#fef3c7';
+        log.style.color = '#92400e';
+        log.style.borderColor = '#fde68a';
+        return;
+      }
+
+      if (btn) { btn.disabled = true; btn.textContent = '傳送中...'; }
+      try {
+        await LineApi.push(m.uid, msg);
+        log.className = 'log show';
+        log.style.background = '#ecfdf5';
+        log.style.color = '#065f46';
+        log.style.borderColor = '#a7f3d0';
+        log.innerHTML = `
+          ✓ <strong>已實際送出至 LINE</strong><br>
+          收件人：${m.name}（${m.uid}）<br>
+          時間：${new Date().toLocaleString('zh-TW')}<br>
+          ─────<br>
+          ${msg}
+        `;
+      } catch (e) {
+        log.className = 'log show';
+        log.style.background = '#fee2e2';
+        log.style.color = '#991b1b';
+        log.style.borderColor = '#fecaca';
+        log.innerHTML = `
+          ❌ <strong>發送失敗</strong><br>
+          錯誤：${e.message}<br>
+          <span style="font-size:10px">請檢查 Worker URL 是否正確、Admin Token 是否設定、User ID 是否有效</span>
+        `;
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💬 傳送私訊'; }
+      }
     };
 
     window.useTemplate = (type) => {
@@ -420,22 +458,62 @@
       if (type === 2) t.value = '【活動通知】魚光窯烤碳麵包本週三（4/24）出爐，集滿 10 點的旅人可至門市兌換。詳情請點擊選單「兌換麵包」。';
     };
 
-    document.getElementById('broadcastBtn').onclick = () => {
+    document.getElementById('broadcastBtn').onclick = async () => {
       const msg = document.getElementById('broadcastMsg').value.trim();
       if (!msg) { alert('請輸入推播內容'); return; }
-      const count = MOCK_MEMBERS.filter(m => m.status === 'active').length;
-      if (!confirm(`確定要推播給 ${count} 位活躍會員嗎？\n\n內容：${msg.substring(0, 50)}${msg.length > 50 ? '...' : ''}`)) return;
       const log = document.getElementById('broadcastLog');
-      log.className = 'log show';
-      log.innerHTML = `
-        ✓ <strong>Demo 模式・模擬推播成功</strong><br>
-        收件人：${count} 位活躍會員<br>
-        送出時間：${new Date().toLocaleString('zh-TW')}<br>
-        ─────<br>
-        ${msg}<br>
-        ─────<br>
-        <span style="font-size:10px">實際部署時呼叫 <code>POST /v2/bot/message/broadcast</code>（每月 200 則免費額度）</span>
-      `;
+      const btn = document.getElementById('broadcastBtn');
+
+      if (!LineApi.isConfigured()) {
+        const count = MOCK_MEMBERS.filter(m => m.status === 'active').length;
+        if (!confirm(`⚠️ Demo 模式（未連線後端）\n\n模擬推播給 ${count} 位會員？`)) return;
+        log.className = 'log show';
+        log.style.background = '#fef3c7';
+        log.style.color = '#92400e';
+        log.style.borderColor = '#fde68a';
+        log.innerHTML = `
+          ⚠️ <strong>Demo 模式・模擬推播</strong><br>
+          收件人：${count} 位模擬會員<br>
+          時間：${new Date().toLocaleString('zh-TW')}<br>
+          ─────<br>
+          ${msg}<br>
+          ─────<br>
+          <span style="font-size:10px">要真的發送訊息，請至 admin.html 設定 Worker URL 與 Admin Token</span>
+        `;
+        return;
+      }
+
+      if (!confirm(`✅ 已連線後端\n\n確定推播給所有實際加入 LINE@ 的會員嗎？\n\n內容：${msg.substring(0, 60)}${msg.length > 60 ? '...' : ''}`)) return;
+
+      btn.disabled = true;
+      btn.textContent = '📤 推播中...';
+      try {
+        await LineApi.broadcast(msg);
+        log.className = 'log show';
+        log.style.background = '#ecfdf5';
+        log.style.color = '#065f46';
+        log.style.borderColor = '#a7f3d0';
+        log.innerHTML = `
+          ✓ <strong>已實際推播給全體會員</strong><br>
+          時間：${new Date().toLocaleString('zh-TW')}<br>
+          ─────<br>
+          ${msg}<br>
+          ─────<br>
+          <span style="font-size:10px">此次使用 Messaging API 額度 1 則（每月 200 則免費）</span>
+        `;
+      } catch (e) {
+        log.className = 'log show';
+        log.style.background = '#fee2e2';
+        log.style.color = '#991b1b';
+        log.style.borderColor = '#fecaca';
+        log.innerHTML = `
+          ❌ <strong>推播失敗</strong><br>
+          ${e.message}
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📣 推播給全體';
+      }
     };
 
     document.getElementById('searchInput').oninput = (e) => {
@@ -449,8 +527,55 @@
       document.getElementById('oaTag').textContent = liffCfg.oaName + '｜LINE@';
     }
 
-    renderStats();
-    renderList();
+    // 檢查後端連線狀態；若已設定則載入實際會員資料
+    async function initBackendStatus() {
+      const statusEl = document.getElementById('apiStatus');
+      if (!LineApi.isConfigured()) {
+        statusEl.textContent = '未連線後端 · Demo';
+        statusEl.style.background = '#fbbf24';
+        statusEl.style.color = '#1f2937';
+        renderStats();
+        renderList();
+        return;
+      }
+
+      statusEl.textContent = '連線中...';
+      statusEl.style.background = '#3b82f6';
+      statusEl.style.color = '#fff';
+
+      try {
+        await LineApi.health();
+        const res = await LineApi.getMembers();
+        if (res.members && res.members.length > 0) {
+          // 用真實會員取代模擬資料
+          MOCK_MEMBERS.length = 0;
+          res.members.forEach(m => {
+            MOCK_MEMBERS.push({
+              uid: m.userId,
+              name: m.displayName,
+              pts: m.points || 0,
+              cnt: m.checkIns || 0,
+              status: m.status === 'active' ? 'active' : 'inactive',
+              tag: null,
+              joinAt: (m.followedAt || '').split('T')[0],
+              phone: '—'
+            });
+          });
+        }
+        statusEl.textContent = `✓ 後端已連線 · ${res.count || 0} 位會員`;
+        statusEl.style.background = '#10b981';
+        statusEl.style.color = '#fff';
+      } catch (e) {
+        statusEl.textContent = '❌ 後端連線失敗';
+        statusEl.style.background = '#ef4444';
+        statusEl.style.color = '#fff';
+        statusEl.title = e.message;
+      }
+      renderStats();
+      renderList();
+    }
+
+    initBackendStatus();
   </script>
 </body>
 </html>

@@ -193,6 +193,65 @@
     </div>
   </div>
 
+  <!-- Cloudflare Worker 後端 API 設定 -->
+  <div style="padding: 16px 16px 0;">
+    <div class="panel" style="border: 2px solid #f38020;">
+      <h2>
+        ☁️ Cloudflare Worker 後端・API 設定
+        <span class="count" id="apiStatusPill">尚未連線</span>
+      </h2>
+      <div style="font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.7;">
+        平台需要後端才能真正發送 LINE 訊息給會員。請依 <code>backend/README.md</code> 部署 Cloudflare Worker 後，將以下資訊填入。
+        <br>
+        部署完成後，Worker 會提供類似 <code>https://xxx.workers.dev</code> 的網址。
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Worker 網址 <span style="color:#ef4444">*</span></label>
+          <input id="workerUrlInput" placeholder="https://sunmoonlake-lowcarbon-api.你的子網域.workers.dev" autocomplete="off" style="font-family:monospace;font-size:12px">
+          <div style="font-size:10px;color:#888;margin-top:4px">部署 Worker 後會拿到這個網址</div>
+        </div>
+        <div class="form-field">
+          <label>Admin Token <span style="color:#ef4444">*</span></label>
+          <input id="adminTokenInput" type="password" placeholder="部署時用 wrangler secret put ADMIN_TOKEN 設定的密碼" autocomplete="off" style="font-family:monospace;font-size:12px">
+          <div style="font-size:10px;color:#888;margin-top:4px">這個 Token 驗證你有權呼叫後端 API（只存在本地瀏覽器）</div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top: 14px;">
+        <button id="saveApiBtn" style="flex:1;padding:12px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:#f38020;color:#fff;font-family:inherit;font-size:13px">
+          💾 儲存並測試連線
+        </button>
+        <button id="clearApiBtn" style="padding:12px 16px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+          清除
+        </button>
+      </div>
+
+      <div id="apiResult" style="margin-top:14px"></div>
+
+      <details style="margin-top:16px;padding:12px;background:#fff7ed;border-radius:8px;font-size:12px;color:#7c2d12;line-height:1.7">
+        <summary style="cursor:pointer;font-weight:700">📘 如何部署 Cloudflare Worker？（點擊展開）</summary>
+        <ol style="margin-top:10px;padding-left:20px;">
+          <li>開啟專案內的 <code>backend/</code> 資料夾 → 閱讀 <code>README.md</code></li>
+          <li>安裝 Wrangler：<code>cd backend && npm install</code></li>
+          <li>登入 Cloudflare：<code>npx wrangler login</code></li>
+          <li>建立 KV Namespace：<code>npx wrangler kv namespace create MEMBERS</code> → 把回傳的 id 填入 <code>wrangler.toml</code></li>
+          <li>設定 Secret（三個）：
+            <ul style="padding-left:20px;margin-top:4px">
+              <li><code>npx wrangler secret put LINE_CHANNEL_ACCESS_TOKEN</code></li>
+              <li><code>npx wrangler secret put LINE_CHANNEL_SECRET</code></li>
+              <li><code>npx wrangler secret put ADMIN_TOKEN</code>（自己設一組密碼）</li>
+            </ul>
+          </li>
+          <li>部署：<code>npx wrangler deploy</code> → 拿到 Worker URL</li>
+          <li>回到這裡把 Worker URL + ADMIN_TOKEN 填進去</li>
+          <li>最後到 LINE Developers 的 Messaging API Channel 設定 Webhook URL：<code>https://你的.workers.dev/api/webhook</code></li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
   <!-- LINE 整合設定 -->
   <div style="padding: 16px 16px 0;">
     <div class="panel" style="border: 2px solid #06C755;">
@@ -387,6 +446,7 @@
   </div>
 
   <script src="assets/data.js"></script>
+  <script src="assets/api-client.js"></script>
   <script>
     let locations = [...getActiveLocations()];
     let selectedId = null;
@@ -652,6 +712,84 @@
     };
 
     renderLiffUI();
+
+    // ============================================
+    // Cloudflare Worker API 設定
+    // ============================================
+    function renderApiUI() {
+      const cfg = LineApi.config();
+      document.getElementById('workerUrlInput').value = cfg.workerUrl || '';
+      document.getElementById('adminTokenInput').value = cfg.adminToken || '';
+
+      const pill = document.getElementById('apiStatusPill');
+      if (cfg.workerUrl && cfg.adminToken) {
+        pill.textContent = '✓ 已設定';
+        pill.style.background = '#fed7aa';
+        pill.style.color = '#7c2d12';
+        pill.style.padding = '3px 10px';
+        pill.style.borderRadius = '10px';
+        pill.style.fontWeight = '600';
+      } else {
+        pill.textContent = '尚未連線';
+        pill.style.color = '#888';
+      }
+    }
+
+    document.getElementById('saveApiBtn').onclick = async () => {
+      const workerUrl = document.getElementById('workerUrlInput').value.trim().replace(/\/$/, '');
+      const adminToken = document.getElementById('adminTokenInput').value.trim();
+      const result = document.getElementById('apiResult');
+
+      if (!workerUrl || !adminToken) {
+        result.innerHTML = '<div style="padding:10px;background:#fef2f2;border-radius:6px;color:#991b1b;font-size:12px">⚠️ 請填入 Worker URL 與 Admin Token</div>';
+        return;
+      }
+      if (!workerUrl.startsWith('https://')) {
+        result.innerHTML = '<div style="padding:10px;background:#fef2f2;border-radius:6px;color:#991b1b;font-size:12px">⚠️ Worker URL 必須以 https:// 開頭</div>';
+        return;
+      }
+
+      LineApi.saveConfig({ workerUrl, adminToken });
+      result.innerHTML = '<div style="padding:10px;background:#eff6ff;border-radius:6px;color:#1e40af;font-size:12px">⏳ 測試連線中...</div>';
+
+      try {
+        await LineApi.health();
+        const stats = await LineApi.getStats();
+        result.innerHTML = `
+          <div style="padding:14px;background:#ecfdf5;border:1px solid #10b981;border-radius:8px">
+            <div style="font-weight:700;color:#065f46;margin-bottom:8px">✓ 後端連線成功</div>
+            <div style="font-size:12px;color:#065f46;line-height:1.7">
+              目前 LINE@ 已有 <strong>${stats.total || 0}</strong> 位會員<br>
+              本月活躍：<strong>${stats.recentActive || 0}</strong> 位<br>
+              累積打卡：<strong>${stats.totalCheckIns || 0}</strong> 次
+            </div>
+            <div style="margin-top:10px">
+              <a href="members.html" style="color:#065f46;font-weight:600;font-size:12px">→ 前往會員管理 / 推播</a>
+            </div>
+          </div>
+        `;
+        renderApiUI();
+      } catch (e) {
+        result.innerHTML = `
+          <div style="padding:14px;background:#fef2f2;border:1px solid #ef4444;border-radius:8px">
+            <div style="font-weight:700;color:#991b1b;margin-bottom:6px">❌ 連線失敗</div>
+            <div style="font-size:12px;color:#991b1b;line-height:1.7">
+              ${e.message}<br>
+              <span style="font-size:11px">可能原因：Worker 尚未部署、網址錯誤、Admin Token 錯誤、或 Worker 還未設定 ADMIN_TOKEN secret</span>
+            </div>
+          </div>
+        `;
+      }
+    };
+
+    document.getElementById('clearApiBtn').onclick = () => {
+      if (!confirm('確定要清除 Worker 後端設定嗎？')) return;
+      localStorage.removeItem('bread_api_config');
+      document.getElementById('apiResult').innerHTML = '';
+      renderApiUI();
+    };
+
+    renderApiUI();
 
     // 啟動
     initMap();

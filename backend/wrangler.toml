@@ -1,0 +1,18 @@
+name = "sunmoonlake-lowcarbon-api"
+main = "worker.js"
+compatibility_date = "2025-03-01"
+
+# 允許前端網域（GitHub Pages）
+[vars]
+ALLOWED_ORIGIN = "https://onelifegpt-tech.github.io"
+
+# KV Namespace 綁定（部署前需用 `wrangler kv namespace create MEMBERS` 建立）
+# 建立後把 id 填到下方，或透過 Dashboard GUI 綁定
+# [[kv_namespaces]]
+# binding = "MEMBERS"
+# id = "REPLACE_WITH_YOUR_KV_ID"
+
+# 以下機密變數請 **勿寫在這裡**，用 `wrangler secret put XXX` 或 Dashboard 設定
+# - LINE_CHANNEL_ACCESS_TOKEN
+# - LINE_CHANNEL_SECRET
+# - ADMIN_TOKEN
