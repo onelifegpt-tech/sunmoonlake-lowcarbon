@@ -143,7 +143,8 @@
     <div class="rm-actions">
       <button class="rm-btn alt" id="downloadBtn">💾 下載 PNG 圖</button>
       <button class="rm-btn" id="copyLinksBtn">📋 複製連結清單</button>
-      <button class="rm-btn" id="installBtn" style="background:#f38020">⚡ 一鍵安裝到 LINE@</button>
+      <button class="rm-btn" id="setDefaultBtn" style="background:#10b981">✓ 設為預設 Rich Menu</button>
+      <button class="rm-btn" id="installBtn" style="background:#f38020">⚡ 重新安裝（清除舊+上傳新）</button>
     </div>
   </div>
 
@@ -293,6 +294,40 @@
       console.log('[RichMenu] final quality:', quality, 'size:', Math.round(dataUrl.length / 1024), 'KB');
       return dataUrl;
     }
+
+    // ✓ 設為預設（不重新上傳圖）
+    document.getElementById('setDefaultBtn').onclick = async () => {
+      if (!LineApi.isConfigured()) {
+        alert('⚠️ 請先到 admin.html 設定 Worker URL 與 Admin Token');
+        window.open('/admin.html', '_blank');
+        return;
+      }
+      const btn = document.getElementById('setDefaultBtn');
+      btn.disabled = true;
+      btn.textContent = '設定中...';
+      try {
+        const res = await fetch(LineApi.config().workerUrl.replace(/\/$/, '') + '/api/richmenu/setDefault', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Token': LineApi.config().adminToken
+          }
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert(`✅ 已設為預設 Rich Menu\n\nID：${data.richMenuId}\n\n請：\n1. 完全關閉手機 LINE App\n2. 重新開啟 LINE\n3. 進「日月潭玩生活」聊天室\n4. 底部應出現六格選單`);
+          btn.textContent = '✓ 已設為預設';
+        } else {
+          alert(`❌ 設定失敗\n\n${JSON.stringify(data, null, 2)}`);
+          btn.textContent = '✓ 設為預設 Rich Menu';
+        }
+      } catch (e) {
+        alert('❌ 錯誤：' + e.message);
+        btn.textContent = '✓ 設為預設 Rich Menu';
+      } finally {
+        btn.disabled = false;
+      }
+    };
 
     document.getElementById('installBtn').onclick = async () => {
       if (!LineApi.isConfigured()) {

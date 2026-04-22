@@ -176,6 +176,130 @@ async function handleEvent(event, env) {
 }
 
 // ============================================
+// 診斷端點：檢查 LINE OA 狀態（需 X-Admin-Token）
+// ============================================
+async function handleDiagnose(request, env) {
+  const auth = requireAdmin(request, env);
+  if (auth) return auth;
+
+  const token = env.LINE_CHANNEL_ACCESS_TOKEN;
+  const results = {};
+
+  // 1. Bot Info（驗證 token）
+  try {
+    const r = await fetch('https://api.line.me/v2/bot/info', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    results.botInfo = { status: r.status, data: r.ok ? await r.json() : await r.text() };
+  } catch (e) { results.botInfo = { error: e.message }; }
+
+  // 2. Webhook Endpoint 目前設定
+  try {
+    const r = await fetch('https://api.line.me/v2/bot/channel/webhook/endpoint', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    results.webhookEndpoint = { status: r.status, data: r.ok ? await r.json() : await r.text() };
+  } catch (e) { results.webhookEndpoint = { error: e.message }; }
+
+  // 3. Rich Menu 清單
+  try {
+    const r = await fetch('https://api.line.me/v2/bot/richmenu/list', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    results.richMenus = { status: r.status, data: r.ok ? await r.json() : await r.text() };
+  } catch (e) { results.richMenus = { error: e.message }; }
+
+  // 4. 預設 Rich Menu
+  try {
+    const r = await fetch('https://api.line.me/v2/bot/user/all/richmenu', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    results.defaultRichMenu = { status: r.status, data: r.ok ? await r.json() : await r.text() };
+  } catch (e) { results.defaultRichMenu = { error: e.message }; }
+
+  // 5. Quota
+  try {
+    const r = await fetch('https://api.line.me/v2/bot/message/quota', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    results.quota = { status: r.status, data: r.ok ? await r.json() : await r.text() };
+  } catch (e) { results.quota = { error: e.message }; }
+
+  // 6. KV 會員數
+  try {
+    const list = await env.MEMBERS.list();
+    results.kvMembers = { count: list.keys.length, keys: list.keys.slice(0, 5).map(k => k.name) };
+  } catch (e) { results.kvMembers = { error: e.message }; }
+
+  return jsonResponse(results);
+}
+
+// ============================================
+// 將「已存在」的 Rich Menu 設為預設（不重新上傳圖）
+// ============================================
+async function handleSetDefault(request, env) {
+  const auth = requireAdmin(request, env);
+  if (auth) return auth;
+  const token = env.LINE_CHANNEL_ACCESS_TOKEN;
+
+  const listRes = await fetch('https://api.line.me/v2/bot/richmenu/list', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!listRes.ok) {
+    return jsonResponse({ ok: false, error: await listRes.text() }, 500);
+  }
+  const { richmenus } = await listRes.json();
+  if (!richmenus || richmenus.length === 0) {
+    return jsonResponse({ ok: false, error: '尚未建立任何 Rich Menu，請先執行 install' }, 404);
+  }
+  const richMenuId = richmenus[0].richMenuId;
+
+  const r = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!r.ok) {
+    return jsonResponse({ ok: false, step: 'set-default', richMenuId, error: await r.text() }, 500);
+  }
+  return jsonResponse({ ok: true, richMenuId, message: '已設為預設 Rich Menu' });
+}
+
+// ============================================
+// 清除 Rich Menu（需 X-Admin-Token）
+// ============================================
+async function handleRichMenuClear(request, env) {
+  const auth = requireAdmin(request, env);
+  if (auth) return auth;
+  const token = env.LINE_CHANNEL_ACCESS_TOKEN;
+
+  const deleted = [];
+  try {
+    // 取消預設
+    await fetch('https://api.line.me/v2/bot/user/all/richmenu', {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const listRes = await fetch('https://api.line.me/v2/bot/richmenu/list', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (listRes.ok) {
+      const data = await listRes.json();
+      for (const rm of (data.richmenus || [])) {
+        await fetch(`https://api.line.me/v2/bot/richmenu/${rm.richMenuId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        deleted.push(rm.richMenuId);
+      }
+    }
+    return jsonResponse({ ok: true, deleted });
+  } catch (e) {
+    return jsonResponse({ ok: false, error: e.message }, 500);
+  }
+}
+
+// ============================================
 // 管理 API（需要 X-Admin-Token）
 // ============================================
 function requireAdmin(request, env) {
@@ -416,6 +540,21 @@ export default {
     }
     if (path === '/api/richmenu/install' && request.method === 'POST') {
       const res = await handleRichMenuInstall(request, env);
+      res.headers.set('Access-Control-Allow-Origin', origin);
+      return res;
+    }
+    if (path === '/api/richmenu/clear' && request.method === 'POST') {
+      const res = await handleRichMenuClear(request, env);
+      res.headers.set('Access-Control-Allow-Origin', origin);
+      return res;
+    }
+    if (path === '/api/richmenu/setDefault' && request.method === 'POST') {
+      const res = await handleSetDefault(request, env);
+      res.headers.set('Access-Control-Allow-Origin', origin);
+      return res;
+    }
+    if (path === '/api/diagnose' && request.method === 'GET') {
+      const res = await handleDiagnose(request, env);
       res.headers.set('Access-Control-Allow-Origin', origin);
       return res;
     }
