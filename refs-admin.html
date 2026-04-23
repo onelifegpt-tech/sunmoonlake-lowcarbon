@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>景點參考照管理 | 低碳麵包集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { max-width: 960px; background: #f5f3ee; }
+
+    .ra-header {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .ra-sub { font-size: 11px; opacity: 0.8; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .ra-header h1 { font-size: 18px; margin: 0; }
+    .ra-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+
+    .ra-toolbar {
+      padding: 14px 20px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: #4b5563;
+    }
+    .ra-storage { margin-left: auto; font-family: 'Menlo', monospace; }
+    .ra-storage b { color: #059669; }
+
+    .ra-grid {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .ra-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+    }
+    .ra-photo-wrap {
+      aspect-ratio: 4 / 3;
+      background: #f3f4f6;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .ra-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .ra-placeholder {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
+      padding: 20px;
+    }
+    .ra-placeholder-icon { font-size: 48px; margin-bottom: 8px; }
+    .ra-tag-source {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .ra-tag-source.uploaded { background: #059669; }
+    .ra-tag-source.fallback { background: #9ca3af; }
+    .ra-tag-source.none     { background: #ef4444; }
+
+    .ra-body { padding: 14px 16px; }
+    .ra-name { font-size: 14px; font-weight: 700; color: #111827; }
+    .ra-id   { font-size: 10px; color: #9ca3af; font-family: 'Menlo', monospace; margin-top: 2px; }
+    .ra-meta {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+    .ra-tag {
+      font-size: 10px; padding: 3px 8px; border-radius: 6px;
+      background: #f3f4f6; color: #374151; font-weight: 600;
+    }
+
+    .ra-hash-canvas {
+      display: block;
+      margin: 10px 0 0;
+      width: 64px; height: 64px;
+      image-rendering: pixelated;
+      background: #f3f4f6;
+      border-radius: 4px;
+    }
+
+    .ra-actions {
+      padding: 12px 16px 16px;
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid #f3f4f6;
+    }
+    .ra-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .ra-btn.primary { background: #10b981; color: #fff; }
+    .ra-btn.ghost   { background: #f3f4f6; color: #374151; }
+    .ra-btn.danger  { background: #fff; color: #dc2626; border: 1px solid #fecaca; }
+    .ra-btn:hover   { opacity: 0.9; }
+    .ra-btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+    .ra-file-input  { display: none; }
+
+    .ra-note {
+      margin: 0 16px 16px;
+      padding: 14px 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #92400e;
+      line-height: 1.7;
+    }
+    .ra-note b { color: #78350f; }
+  </style>
+</head>
+<body>
+  <div class="ra-header">
+    <div class="ra-sub">OPERATOR · REFERENCE PHOTOS</div>
+    <h1>景點參考照管理</h1>
+    <p>上傳的照片會做為 pHash 比對的「標準答案」，建議每張景點挑正面、光線正常的代表照</p>
+  </div>
+
+  <div class="ra-toolbar">
+    <span>共 <b id="landmarkCount">0</b> 個景點</span>
+    <span>已上傳 <b id="uploadedCount" style="color:#059669">0</b></span>
+    <span class="ra-storage">LocalStorage: <b id="storageUsed">0 KB</b> / ~5 MB</span>
+  </div>
+
+  <div class="ra-note">
+    💡 <b>運作原理</b>：使用者拍照後，若照片無 GPS 資訊，系統會下載您這裡上傳的參考照，雙方各縮到 8×8 灰階，計算「平均雜湊」比對相似度。
+    拍攝建議：正面構圖、不含行人、白天自然光、與遊客可能拍到的角度接近。上傳後自動縮至 800px 寬以節省空間。
+  </div>
+
+  <div class="ra-grid" id="grid"></div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    const landmarks = LOCATIONS.filter(l => l.category === 'landmark');
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    function computeStorageUsed() {
+      let total = 0;
+      for (const k in localStorage) {
+        if (localStorage.hasOwnProperty(k)) {
+          total += (localStorage[k].length + k.length) * 2; // UTF-16
+        }
+      }
+      return total;
+    }
+
+    // 上傳 → 縮至 maxWidth=800, JPEG 0.85 → dataURL
+    async function compressImage(file, maxWidth = 800) {
+      const img = await new Promise((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = URL.createObjectURL(file);
+      });
+      const ratio = img.width > maxWidth ? maxWidth / img.width : 1;
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(img.src);
+      return canvas.toDataURL('image/jpeg', 0.85);
+    }
+
+    async function drawHashPreview(canvas, locationId) {
+      const hash = await DB.computeRefPhotoHash(locationId);
+      if (!hash) {
+        canvas.getContext('2d').clearRect(0, 0, 8, 8);
+        return;
+      }
+      canvas.width = 8; canvas.height = 8;
+      const ctx = canvas.getContext('2d');
+      const img = ctx.createImageData(8, 8);
+      for (let i = 0; i < hash.length; i++) {
+        const v = hash[i] ? 255 : 0;
+        img.data[i * 4]     = v;
+        img.data[i * 4 + 1] = v;
+        img.data[i * 4 + 2] = v;
+        img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function render() {
+      const grid = document.getElementById('grid');
+      const uploaded = DB._loadRefPhotos();
+
+      document.getElementById('landmarkCount').textContent = landmarks.length;
+      document.getElementById('uploadedCount').textContent = Object.keys(uploaded).length;
+      document.getElementById('storageUsed').textContent = formatBytes(computeStorageUsed());
+
+      grid.innerHTML = landmarks.map(l => {
+        const up = uploaded[l.id];
+        const tagText  = up ? '已上傳' : '尚未設定';
+        const tagClass = up ? 'uploaded' : 'none';
+        const imgHtml  = up
+          ? `<img src="${up}" alt="${l.name}">`
+          : `<div class="ra-placeholder"><div class="ra-placeholder-icon">📷</div>尚未上傳參考照<br><span style="font-size:10px">無 GPS 的使用者將全部進覆核</span></div>`;
+        return `
+          <div class="ra-card">
+            <div class="ra-photo-wrap">
+              <span class="ra-tag-source ${tagClass}">${tagText}</span>
+              ${imgHtml}
+            </div>
+            <div class="ra-body">
+              <div class="ra-name">${l.icon} ${l.name}</div>
+              <div class="ra-id">${l.id} · ${l.lat}, ${l.lng}</div>
+              <div class="ra-meta">
+                <span class="ra-tag">GPS 半徑 ${l.gpsRadius} m</span>
+                <span class="ra-tag">pHash 門檻 ${l.phashThreshold}</span>
+              </div>
+              ${up ? `<canvas class="ra-hash-canvas" id="hash-${l.id}"></canvas>` : ''}
+            </div>
+            <div class="ra-actions">
+              <label class="ra-btn ${up ? 'ghost' : 'primary'}" for="file-${l.id}">
+                ${up ? '🔄 重新上傳' : '📤 上傳參考照'}
+              </label>
+              <input type="file" id="file-${l.id}" class="ra-file-input" accept="image/*" data-id="${l.id}">
+              ${up ? `<button class="ra-btn danger" data-clear="${l.id}">🗑</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 畫 hash 預覽
+      landmarks.forEach(l => {
+        const canvas = document.getElementById(`hash-${l.id}`);
+        if (canvas) drawHashPreview(canvas, l.id);
+      });
+
+      // 上傳事件
+      grid.querySelectorAll('.ra-file-input').forEach(input => {
+        input.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const locId = input.dataset.id;
+          try {
+            const dataUrl = await compressImage(file, 800);
+            const result = DB.setRefPhoto(locId, dataUrl);
+            if (!result.ok) { alert(result.msg); return; }
+            render();
+          } catch (err) {
+            alert('圖片處理失敗：' + err.message);
+          }
+        };
+      });
+
+      // 清除事件
+      grid.querySelectorAll('[data-clear]').forEach(btn => {
+        btn.onclick = () => {
+          const locId = btn.dataset.clear;
+          const loc = landmarks.find(l => l.id === locId);
+          if (confirm(`確定要移除「${loc.name}」的參考照嗎？\n移除後將退回預設檔案（若不存在則不再比對 pHash）。`)) {
+            DB.clearRefPhoto(locId);
+            render();
+          }
+        };
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

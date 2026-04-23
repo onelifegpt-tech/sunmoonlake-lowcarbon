@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>景點照片覆核後台 | 低碳麵包集點</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { max-width: 960px; background: #f5f3ee; }
+    .rv-header {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .rv-header h1 { font-size: 18px; margin: 0; }
+    .rv-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
+    .rv-sub { font-size: 11px; opacity: 0.8; margin-top: 4px; letter-spacing: 0.1em; }
+
+    .rv-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      align-items: center;
+    }
+    .rv-filter {
+      padding: 6px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #374151;
+    }
+    .rv-filter.active {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .rv-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .rv-list {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .rv-card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+    }
+    .rv-photo {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+    .rv-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+    .rv-loc {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .rv-user {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 10px;
+      font-family: 'Menlo', monospace;
+    }
+    .rv-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .rv-tag {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f3f4f6;
+      color: #374151;
+      font-weight: 600;
+    }
+    .rv-tag.warn { background: #fef3c7; color: #92400e; }
+    .rv-tag.ok   { background: #d1fae5; color: #065f46; }
+    .rv-tag.fail { background: #fee2e2; color: #991b1b; }
+    .rv-reason {
+      font-size: 12px;
+      color: #4b5563;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .rv-time {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    .rv-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .rv-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .rv-btn:hover { opacity: 0.9; }
+    .rv-btn.ok   { background: #10b981; color: #fff; }
+    .rv-btn.fail { background: #ef4444; color: #fff; }
+    .rv-btn.ghost { background: #f3f4f6; color: #374151; }
+
+    .rv-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+    .rv-empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .rv-resolved { opacity: 0.6; }
+    .rv-resolved .rv-actions { display: none; }
+    .rv-resolved::before {
+      content: attr(data-resolved);
+      position: absolute;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 999px;
+      top: 10px;
+      left: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .rv-card { position: relative; }
+  </style>
+</head>
+<body>
+  <div class="rv-header">
+    <div class="rv-sub">OPERATOR · REVIEW CONSOLE</div>
+    <h1>景點照片人工覆核</h1>
+    <p>EXIF GPS 或 pHash 驗證未通過的照片，由營運方人工判定</p>
+  </div>
+
+  <div class="rv-toolbar">
+    <button class="rv-filter active" data-filter="pending">⏳ 待覆核</button>
+    <button class="rv-filter" data-filter="approved">✓ 已通過</button>
+    <button class="rv-filter" data-filter="rejected">✗ 已駁回</button>
+    <button class="rv-filter" data-filter="all">全部</button>
+    <span class="rv-count" id="count"></span>
+  </div>
+
+  <div class="rv-list" id="list"></div>
+
+  <script src="assets/data.js"></script>
+  <script>
+    let currentFilter = 'pending';
+
+    const REASON_TEXT = {
+      gps_out_of_range: 'EXIF GPS 與景點距離超出範圍（可能偽造或誤觸）',
+      phash_mismatch:   '無 GPS，影像感知雜湊與參考照差異過大',
+      no_gps_no_reference: '照片未含 GPS 資訊，且參考照未能載入比對',
+      unknown: '未知原因'
+    };
+
+    function fmtTime(ts) {
+      return new Date(ts).toLocaleString('zh-TW', {
+        month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function render() {
+      const queue = DB.listPending();
+      const filtered = currentFilter === 'all' ? queue : queue.filter(q => q.status === currentFilter);
+
+      // 排序：pending 新的在前；其他依 resolvedAt desc
+      filtered.sort((a, b) => {
+        const ta = a.status === 'pending' ? a.submittedAt : (a.resolvedAt || a.submittedAt);
+        const tb = b.status === 'pending' ? b.submittedAt : (b.resolvedAt || b.submittedAt);
+        return tb - ta;
+      });
+
+      document.getElementById('count').textContent = `共 ${filtered.length} 筆 / 全站 ${queue.length} 筆`;
+
+      const list = document.getElementById('list');
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="rv-empty">
+            <div class="rv-empty-icon">📭</div>
+            <div>沒有 ${currentFilter === 'pending' ? '待覆核' : currentFilter === 'all' ? '任何' : currentFilter} 項目</div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filtered.map(p => {
+        const metaTags = [];
+        if (p.via === 'gps' && typeof p.meta.distance === 'number') {
+          metaTags.push(`<span class="rv-tag warn">📍 距景點 ${p.meta.distance} m</span>`);
+          metaTags.push(`<span class="rv-tag">門檻 ${p.meta.radius} m</span>`);
+        }
+        if (p.via === 'phash' && typeof p.meta.hamming === 'number') {
+          metaTags.push(`<span class="rv-tag warn">🧮 漢明距離 ${p.meta.hamming}</span>`);
+          metaTags.push(`<span class="rv-tag">門檻 ${p.meta.threshold}</span>`);
+        }
+        if (p.via === 'none') {
+          metaTags.push(`<span class="rv-tag warn">❓ 無 GPS · 無參考照</span>`);
+        }
+
+        const statusBadge = p.status === 'approved' ? '已通過' : p.status === 'rejected' ? '已駁回' : '';
+        const resolvedClass = p.status !== 'pending' ? 'rv-resolved' : '';
+
+        return `
+          <div class="rv-card ${resolvedClass}" data-resolved="${statusBadge}">
+            <img class="rv-photo" src="${p.photoDataUrl}" alt="${p.locationName}">
+            <div class="rv-body">
+              <div class="rv-loc">${p.locationName}</div>
+              <div class="rv-user">${p.displayName || '旅人'} · ${p.userId}</div>
+              <div class="rv-meta">${metaTags.join('')}</div>
+              <div class="rv-reason">${REASON_TEXT[p.reason] || p.reason}</div>
+              <div class="rv-time">送出：${fmtTime(p.submittedAt)}${p.resolvedAt ? ` · 處理：${fmtTime(p.resolvedAt)}` : ''}</div>
+              <div class="rv-actions">
+                <button class="rv-btn ok"   data-id="${p.pendingId}" data-decision="approved">✓ 核准發點</button>
+                <button class="rv-btn fail" data-id="${p.pendingId}" data-decision="rejected">✗ 駁回</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.rv-btn[data-decision]').forEach(b => {
+        b.onclick = () => {
+          const result = DB.resolvePending(b.dataset.id, b.dataset.decision);
+          if (!result.ok) { alert(result.msg); return; }
+          render();
+        };
+      });
+    }
+
+    document.querySelectorAll('.rv-filter').forEach(f => {
+      f.onclick = () => {
+        document.querySelectorAll('.rv-filter').forEach(x => x.classList.remove('active'));
+        f.classList.add('active');
+        currentFilter = f.dataset.filter;
+        render();
+      };
+    });
+
+    render();
+
+    // 每 5 秒自動刷新（同裝置同步）
+    setInterval(render, 5000);
+  </script>
+</body>
+</html>

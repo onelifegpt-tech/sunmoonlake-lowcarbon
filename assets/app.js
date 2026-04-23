@@ -215,14 +215,20 @@ function renderCategoryDetail(cat) {
 
 function renderLocationCard(l) {
   const meta = CATEGORIES[l.category];
-  const checked = DB.hasCheckedIn(state, l.id);
+  const status = DB.getCheckInStatus(state, l.id);
   const isPhoto = l.verifyMethod === 'photo';
   const methodBadge = isPhoto
-    ? '<span class="badge photo">📷 拍照辨識</span>'
+    ? '<span class="badge photo">📷 照片定位驗證</span>'
     : '<span class="badge qr">📱 QR 掃碼</span>';
-  const methodIcon = isPhoto ? '📷' : '📱';
+  const statusMap = {
+    approved: { icon: '✅', cls: 'checked' },
+    pending:  { icon: '⏳', cls: 'pending' },
+    rejected: { icon: '↻',  cls: 'rejected' },
+    none:     { icon: isPhoto ? '📷' : '📱', cls: '' }
+  };
+  const s = statusMap[status];
   return `
-    <div class="location-card ${checked ? 'checked' : ''}" data-id="${l.id}">
+    <div class="location-card ${s.cls}" data-id="${l.id}">
       <div class="location-icon" style="background:${meta.color}22">${l.icon}</div>
       <div class="location-info">
         <div class="location-name">${l.name}</div>
@@ -231,9 +237,10 @@ function renderLocationCard(l) {
           <span class="badge points">+${l.points} 點</span>
           <span class="badge co2">減 ${l.co2} kg CO₂</span>
           ${methodBadge}
+          ${status === 'pending' ? '<span class="badge" style="background:#fef3c7;color:#92400e">覆核中</span>' : ''}
         </div>
       </div>
-      <div class="location-status">${checked ? '✅' : methodIcon}</div>
+      <div class="location-status">${s.icon}</div>
     </div>
   `;
 }
@@ -290,7 +297,7 @@ function initMap() {
           <span style="background:#f0f7ff;color:#5a8fcc;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">減 ${l.co2} kg</span>
           ${checked ? '<span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">✓ 已打卡</span>' : ''}
         </div>
-        <button onclick="openCheckInFromMap('${l.id}')" style="width:100%;padding:8px;background:#06C755;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:12px;cursor:pointer">${checked ? '查看' : '📷 拍照打卡'}</button>
+        <button onclick="openCheckInFromMap('${l.id}')" style="width:100%;padding:8px;background:#06C755;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:12px;cursor:pointer">${checked ? '查看' : (l.verifyMethod === 'qr' ? '📱 掃碼打卡' : '📷 拍照打卡')}</button>
       </div>
     `);
   });
@@ -300,11 +307,11 @@ function initMap() {
 window.openCheckInFromMap = (id) => {
   const loc = getActiveLocations().find(l => l.id === id);
   if (!loc) return;
-  if (DB.hasCheckedIn(state, loc.id)) {
-    showModal('✅', '已完成打卡', '此地點您已累積過點數');
-    return;
-  }
-  showPhotoCheckIn(loc);
+  const st = DB.getCheckInStatus(state, loc.id);
+  if (st === 'approved') { showModal('✅', '已完成打卡', '此地點您已累積過點數'); return; }
+  if (st === 'pending')  { showModal('⏳', '覆核中', '此地點照片已送出人工覆核'); return; }
+  if (loc.verifyMethod === 'qr') showQRCheckIn(loc);
+  else showPhotoCheckIn(loc);
 };
 
 // ===== 兌換麵包 =====
@@ -360,18 +367,33 @@ function renderHistory() {
       <div class="empty-state">
         <div class="icon">📷</div>
         <div>還沒有打卡紀錄</div>
-        <div style="font-size:12px;margin-top:6px">前往合作地點拍照 AI 辨識即可集點</div>
+        <div style="font-size:12px;margin-top:6px">掃 QR 或拍照定位即可累積低碳點數</div>
       </div>
     `;
   }
   const sorted = [...state.checkIns].sort((a, b) => b.timestamp - a.timestamp);
   const locs = getActiveLocations();
+  const methodLabel = {
+    qr: '📱 QR 掃碼',
+    'photo-gps': '📍 GPS 驗證',
+    'photo-phash': '🧮 影像比對',
+    'photo-review': '👁 人工覆核',
+    photo: '📷 照片'
+  };
   return `
     <div class="section-title">打卡紀錄（${state.checkIns.length} 筆）</div>
     ${sorted.map(c => {
       const loc = locs.find(l => l.id === c.locationId);
       if (!loc) return '';
       const cat = CATEGORIES[loc.category];
+      const isPending = c.status === 'pending';
+      const isRejected = c.status === 'rejected';
+      const statusBadge = isPending
+        ? '<span class="badge" style="background:#fef3c7;color:#92400e">⏳ 覆核中</span>'
+        : isRejected
+          ? '<span class="badge" style="background:#fee2e2;color:#991b1b">✗ 未通過</span>'
+          : '';
+      const ml = methodLabel[c.method] || '📷 照片';
       return `
         <div class="location-card">
           <div class="location-icon" style="background:${cat.color}22">${loc.icon}</div>
@@ -379,9 +401,10 @@ function renderHistory() {
             <div class="location-name">${loc.name}</div>
             <div class="location-addr">🕒 ${new Date(c.timestamp).toLocaleString('zh-TW')}</div>
             <div class="location-meta">
-              <span class="badge points">+${c.points} 點</span>
-              <span class="badge co2">減 ${c.co2} kg</span>
-              ${c.method === 'photo' ? '<span class="badge photo">📷 AI 辨識</span>' : ''}
+              ${isPending || isRejected
+                ? statusBadge
+                : `<span class="badge points">+${c.points} 點</span><span class="badge co2">減 ${c.co2} kg</span>`}
+              <span class="badge photo">${ml}</span>
             </div>
           </div>
         </div>
@@ -608,7 +631,7 @@ function showPhotoCheckIn(location) {
           <div class="photo-upload-tip">💡 真實環境：於 LINE 聊天室上傳照片，AI Bot 自動辨識並回傳集點結果</div>
         </div>
 
-        <!-- 步驟 2：辨識中 -->
+        <!-- 步驟 2：驗證中 -->
         <div class="photo-step" data-step="verifying" style="display:none">
           <img id="photoPreview" class="photo-preview" alt="">
           <div class="ai-progress">
@@ -616,9 +639,9 @@ function showPhotoCheckIn(location) {
             <div class="ai-dot"></div>
             <div class="ai-dot"></div>
           </div>
-          <div class="ai-status-title">🔍 AI 影像辨識中...</div>
-          <div class="ai-status-sub" id="aiStatusSub">分析建築特徵 / 比對地點資料庫</div>
-          <div class="ai-tech-note">使用 Vision API 進行物件偵測與相似度比對</div>
+          <div class="ai-status-title">🔍 照片驗證中...</div>
+          <div class="ai-status-sub" id="aiStatusSub">讀取 EXIF GPS 資訊</div>
+          <div class="ai-tech-note">GPS 定位驗證・無 GPS 則自動比對參考影像</div>
         </div>
 
         <!-- 步驟 3：辨識結果 -->
@@ -645,12 +668,17 @@ function showPhotoCheckIn(location) {
       backdrop.querySelector('#photoPreview').src = dataUrl;
 
       const statusSub = backdrop.querySelector('#aiStatusSub');
-      const statuses = ['上傳照片中...', '擷取影像特徵...', '比對地點資料庫...', '計算相似度...'];
+      const statuses = [
+        '讀取 EXIF GPS 資訊...',
+        '計算與景點距離...',
+        '載入參考影像...',
+        '感知雜湊比對（aHash 8×8）...'
+      ];
       let i = 0;
       const statusTimer = setInterval(() => {
         statusSub.textContent = statuses[i % statuses.length];
         i++;
-      }, 500);
+      }, 600);
 
       const result = await DB.verifyPhoto(location, file);
       clearInterval(statusTimer);
@@ -659,42 +687,73 @@ function showPhotoCheckIn(location) {
       backdrop.querySelector('[data-step="result"]').style.display = 'block';
       const resultBox = backdrop.querySelector('#photoResult');
 
+      // 驗證細節渲染
+      const renderVerifyDetail = (r) => {
+        if (r.via === 'gps' && typeof r.distance === 'number') {
+          return `
+            <div class="result-detected">
+              <div class="rd-label">驗證方式：EXIF GPS</div>
+              <div class="rd-tags">
+                <span class="rd-tag">📍 距景點 ${r.distance} m</span>
+                <span class="rd-tag">門檻 ${r.radius} m</span>
+              </div>
+            </div>`;
+        }
+        if (r.via === 'phash' && typeof r.hamming === 'number') {
+          return `
+            <div class="result-detected">
+              <div class="rd-label">驗證方式：影像感知雜湊（aHash 8×8）</div>
+              <div class="rd-tags">
+                <span class="rd-tag">🧮 漢明距離 ${r.hamming}</span>
+                <span class="rd-tag">門檻 ${r.threshold}</span>
+              </div>
+            </div>`;
+        }
+        return '';
+      };
+
       if (result.ok) {
-        DB.checkIn(state, location, dataUrl);
+        DB.checkIn(state, location, dataUrl, { via: result.via });
         resultBox.innerHTML = `
           <img class="photo-preview" src="${dataUrl}" alt="">
-          <div class="result-badge success">✓ 辨識成功</div>
+          <div class="result-badge success">✓ 驗證成功</div>
           <div class="result-location">${location.icon} ${location.name}</div>
-          <div class="result-confidence">相似度 <strong>${result.confidence}%</strong></div>
-          <div class="result-detected">
-            <div class="rd-label">AI 偵測到的特徵：</div>
-            <div class="rd-tags">
-              ${result.detected.map(k => `<span class="rd-tag">✓ ${k}</span>`).join('')}
-            </div>
-          </div>
+          <div class="result-confidence">${result.msg}</div>
+          ${renderVerifyDetail(result)}
           <div class="result-points">
             <div class="rp-line"><span>獲得點數</span><strong>+${location.points} 點</strong></div>
             <div class="rp-line"><span>減碳貢獻</span><strong>${location.co2} kg CO₂</strong></div>
           </div>
           <button class="btn btn-primary" id="resultOk">完成・繼續集點</button>
         `;
-        resultBox.querySelector('#resultOk').onclick = () => {
-          backdrop.remove();
-          render();
-        };
+        resultBox.querySelector('#resultOk').onclick = () => { backdrop.remove(); render(); };
+      } else if (result.pending) {
+        DB.addPending(state, location, dataUrl, result);
+        resultBox.innerHTML = `
+          <img class="photo-preview" src="${dataUrl}" alt="">
+          <div class="result-badge" style="background:#fef3c7;color:#92400e">⏳ 送出人工覆核</div>
+          <div class="result-location">${location.icon} ${location.name}</div>
+          <div class="result-confidence">${result.msg}</div>
+          ${renderVerifyDetail(result)}
+          <div class="result-points">
+            <div class="rp-line"><span>目前狀態</span><strong>覆核中</strong></div>
+            <div class="rp-line"><span>通過後可獲得</span><strong>+${location.points} 點</strong></div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:#fffbeb;border-radius:8px;font-size:12px;color:#92400e;line-height:1.6">
+            💡 常見原因：照片未含 GPS 資訊（iOS 分享時可能自動去除）、或 GPS 距景點過遠。營運方人工確認後會通知您。
+          </div>
+          <button class="btn btn-primary" id="resultOk">我知道了</button>
+        `;
+        resultBox.querySelector('#resultOk').onclick = () => { backdrop.remove(); render(); };
       } else {
         resultBox.innerHTML = `
           <img class="photo-preview" src="${dataUrl}" alt="">
-          <div class="result-badge fail">✗ 辨識失敗</div>
+          <div class="result-badge fail">✗ 驗證失敗</div>
           <div class="result-location">${result.msg}</div>
-          ${result.confidence ? `<div class="result-confidence">相似度 <strong>${result.confidence}%</strong>（需 ≥ 70%）</div>` : ''}
           <button class="btn btn-primary" id="retryBtn">重新拍攝</button>
           <button class="btn btn-outline" id="cancelBtn" style="margin-top:8px">稍後再試</button>
         `;
-        resultBox.querySelector('#retryBtn').onclick = () => {
-          backdrop.remove();
-          showPhotoCheckIn(location);
-        };
+        resultBox.querySelector('#retryBtn').onclick = () => { backdrop.remove(); showPhotoCheckIn(location); };
         resultBox.querySelector('#cancelBtn').onclick = () => backdrop.remove();
       }
     };
@@ -1100,19 +1159,22 @@ function bindEvents() {
     };
   });
 
-  // 地點卡：點擊依 verifyMethod 分流
+  // 地點卡：點擊依狀態與 verifyMethod 分流
   document.querySelectorAll('.location-card[data-id]').forEach(c => {
     c.onclick = () => {
       const loc = getActiveLocations().find(l => l.id === c.dataset.id);
-      if (DB.hasCheckedIn(state, loc.id)) {
+      const st = DB.getCheckInStatus(state, loc.id);
+      if (st === 'approved') {
         showModal('✅', '已完成打卡', '此地點您已累積過點數，請繼續前往其他打卡點');
         return;
       }
-      if (loc.verifyMethod === 'qr') {
-        showQRCheckIn(loc);
-      } else {
-        showPhotoCheckIn(loc);
+      if (st === 'pending') {
+        showModal('⏳', '覆核中', '此地點的照片已送出人工覆核，請耐心等候通知。通過後點數會自動發放。');
+        return;
       }
+      // none 或 rejected 都允許（重新）提交
+      if (loc.verifyMethod === 'qr') showQRCheckIn(loc);
+      else showPhotoCheckIn(loc);
     };
   });
 
