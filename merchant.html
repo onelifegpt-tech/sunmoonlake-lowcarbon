@@ -5,60 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>店家 QR 產生器 | 低碳麵包集點</title>
   <link rel="stylesheet" href="assets/style.css">
+  <!-- QR 產生器（UMD 全域 QRCode） -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <!-- 批次下載 ZIP -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
-    body { max-width: 720px; background: #fafafa; }
-    .merchant-header {
-      background: linear-gradient(135deg, #06C755, #05a847);
-      color: #fff; padding: 20px; text-align: center;
+    body { max-width: none; background: #fafafa; }
+
+    .merchant-header { padding: 28px 32px; }
+
+    .mh-toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 32px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .merchant-header h1 { font-size: 20px; }
-    .merchant-header p { font-size: 12px; opacity: 0.9; margin-top: 4px; }
-    .qr-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 14px;
-      padding: 16px;
+    .mh-toolbar .spacer { flex: 1; }
+    .mh-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
     }
-    .qr-card {
-      background: #fff; border-radius: 12px; padding: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      text-align: center;
-      page-break-inside: avoid;
-    }
-    .qr-card h3 { font-size: 15px; margin-bottom: 4px; }
-    .qr-card .addr { font-size: 11px; color: #888; margin-bottom: 10px; }
-    .qr-card canvas { margin: 10px auto; display: block; }
-    .qr-badges { display: flex; justify-content: center; gap: 6px; margin: 8px 0; }
-    .qr-id {
-      font-family: monospace; font-size: 11px;
-      color: #888; margin-top: 6px;
-      padding: 4px 8px; background: #f5f5f5; border-radius: 4px;
-      display: inline-block;
-    }
+    .mh-btn:hover { background: #f9fafb; }
+    .mh-btn.primary { background: #111827; color: #fff; border-color: #111827; }
+    .mh-btn.primary:hover { background: #1f2937; }
+    .mh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
     .filter-bar {
-      padding: 12px 16px; background: #fff;
-      border-bottom: 1px solid #eee;
+      padding: 12px 32px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
       display: flex; gap: 8px; overflow-x: auto;
     }
     .filter-btn {
-      padding: 6px 14px; border: 1px solid #ddd; background: #fff;
-      border-radius: 16px; font-size: 12px; cursor: pointer;
-      white-space: nowrap; font-family: inherit;
+      padding: 6px 14px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      font-weight: 600;
     }
-    .filter-btn.active { background: #06C755; color: #fff; border-color: #06C755; }
-    .print-btn {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #06C755; color: #fff; border: none;
-      padding: 14px 20px; border-radius: 30px; font-size: 14px;
-      font-weight: 700; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(6,199,85,0.4);
+    .filter-btn.active { background: #111827; color: #fff; border-color: #111827; }
+
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding: 20px 32px 80px;
     }
+    .qr-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px 18px 16px;
+      text-align: center;
+      page-break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+    }
+    .qr-card h3 { font-size: 15px; margin-bottom: 4px; color: #111827; font-weight: 700; }
+    .qr-card .addr { font-size: 11px; color: #6b7280; margin-bottom: 10px; }
+    .qr-card canvas {
+      margin: 10px auto;
+      display: block;
+      border: 1px solid #f3f4f6;
+      border-radius: 6px;
+    }
+    .qr-empty {
+      width: 180px; height: 180px; margin: 10px auto;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px dashed #e5e7eb;
+      border-radius: 8px;
+      color: #9ca3af;
+      font-size: 11px;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .qr-badges { display: flex; justify-content: center; gap: 6px; margin: 8px 0 10px; }
+    .qr-id {
+      font-family: 'Menlo', monospace;
+      font-size: 11px;
+      color: #6b7280;
+      padding: 4px 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      display: inline-block;
+      margin: 4px auto 12px;
+    }
+    .qr-url {
+      font-size: 10px;
+      color: #9ca3af;
+      word-break: break-all;
+      padding: 8px 10px;
+      background: #f9fafb;
+      border-radius: 6px;
+      margin: 0 0 10px;
+      font-family: 'Menlo', monospace;
+      line-height: 1.4;
+      text-align: left;
+    }
+    .qr-actions { display: flex; gap: 6px; margin-top: auto; }
+    .qr-action-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-family: inherit;
+    }
+    .qr-action-btn.primary {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+    }
+    .qr-action-btn.primary:hover { background: #1f2937; }
+    .qr-action-btn:hover { background: #f9fafb; }
+
+    #genStatus {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    #genStatus.ok   { color: #16a34a; }
+    #genStatus.fail { color: #dc2626; }
+
     @media print {
-      .merchant-header, .filter-bar, .print-btn { display: none; }
+      .merchant-header, .mh-toolbar, .filter-bar, .qr-actions, .qr-url { display: none; }
       body { background: #fff; max-width: 100%; }
-      .qr-grid { grid-template-columns: repeat(3, 1fr); }
-      .qr-card { box-shadow: none; border: 1px dashed #ccc; }
+      .qr-grid { grid-template-columns: repeat(3, 1fr); padding: 0; }
+      .qr-card { border: 1px dashed #ccc; }
+      .admin-sidebar, .admin-hamburger, .admin-backdrop { display: none !important; }
+      .admin-main { margin-left: 0 !important; padding: 0 !important; }
     }
   </style>
   <link rel="stylesheet" href="assets/admin-nav.css">
@@ -68,21 +162,38 @@
 <body>
   <div class="merchant-header">
     <h1>🖨️ 店家 QR Code 產生器</h1>
-    <p>將 QR 印出貼在合作店家，遊客掃描即打卡獲得點數</p>
+    <p>點選單張「下載 PNG」即可取得該店家 QR，或「下載全部 ZIP」一次打包</p>
+  </div>
+
+  <div class="mh-toolbar">
+    <button class="mh-btn primary" id="regenAll">🔄 重新產生全部</button>
+    <button class="mh-btn" id="downloadAll">📦 下載全部 ZIP</button>
+    <button class="mh-btn" id="printAll">🖨️ 列印全部</button>
+    <span class="spacer"></span>
+    <span id="genStatus">等待產生…</span>
   </div>
 
   <div class="filter-bar" id="filterBar"></div>
 
   <div class="qr-grid" id="qrGrid"></div>
 
-  <button class="print-btn" onclick="window.print()">🖨️ 列印全部</button>
-
   <script src="assets/data.js"></script>
   <script>
-    // 打卡網址（部署後改成你的 LIFF URL）
-    const BASE_URL = location.origin + location.pathname.replace('merchant.html', 'index.html');
+    // 打卡網址（部署後自動根據當前網域生成）
+    const BASE_URL = location.origin + location.pathname.replace(/merchant\.html$/, '').replace(/\/merchant$/, '/') + 'index.html';
 
     let filterCat = 'all';
+    const qrCache = {}; // 快取 dataURL for ZIP / download
+
+    function setStatus(msg, tone) {
+      const el = document.getElementById('genStatus');
+      el.textContent = msg;
+      el.className = tone || '';
+    }
+
+    function urlFor(id) {
+      return `${BASE_URL}?checkin=${id}`;
+    }
 
     function renderFilters() {
       const cats = [
@@ -93,43 +204,138 @@
         <button class="filter-btn ${filterCat === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label}</button>
       `).join('');
       document.querySelectorAll('.filter-btn').forEach(b => {
-        b.onclick = () => { filterCat = b.dataset.cat; render(); };
+        b.onclick = () => { filterCat = b.dataset.cat; renderGrid(); };
       });
     }
 
-    function render() {
-      renderFilters();
+    function renderGrid() {
       const locs = filterCat === 'all' ? LOCATIONS : LOCATIONS.filter(l => l.category === filterCat);
       const grid = document.getElementById('qrGrid');
       grid.innerHTML = locs.map(l => {
-        const cat = CATEGORIES[l.category];
+        const url = urlFor(l.id);
+        const hasQR = typeof QRCode !== 'undefined';
         return `
-          <div class="qr-card">
+          <div class="qr-card" data-id="${l.id}">
             <h3>${l.icon} ${l.name}</h3>
             <div class="addr">📍 ${l.addr}</div>
             <div class="qr-badges">
               <span class="badge points">+${l.points} 點</span>
               <span class="badge co2">減 ${l.co2} kg</span>
             </div>
-            <canvas id="qr-${l.id}"></canvas>
+            ${hasQR
+              ? `<canvas id="qr-${l.id}"></canvas>`
+              : `<div class="qr-empty">
+                   <div>⚠️ QR 元件未就緒</div>
+                   <div>請確認網路或按「重新產生」</div>
+                 </div>`}
             <div class="qr-id">${l.id}</div>
-            <div style="font-size:10px;color:#aaa;margin-top:6px">掃碼打卡累積減碳點數</div>
+            <div class="qr-url">${url}</div>
+            <div class="qr-actions">
+              <button class="qr-action-btn primary" data-download="${l.id}">📥 下載 PNG</button>
+              <button class="qr-action-btn" data-copy="${l.id}">📋 複製網址</button>
+            </div>
           </div>
         `;
       }).join('');
 
-      // 繪製 QR
-      locs.forEach(l => {
-        const url = `${BASE_URL}?checkin=${l.id}`;
-        QRCode.toCanvas(document.getElementById(`qr-${l.id}`), url, {
-          width: 180,
-          margin: 1,
-          color: { dark: '#000', light: '#fff' }
-        });
+      if (typeof QRCode !== 'undefined') {
+        locs.forEach(l => drawQR(l));
+      }
+      bindCardActions();
+    }
+
+    function drawQR(loc) {
+      const canvas = document.getElementById(`qr-${loc.id}`);
+      if (!canvas) return;
+      QRCode.toCanvas(canvas, urlFor(loc.id), {
+        width: 200,
+        margin: 1,
+        color: { dark: '#111827', light: '#ffffff' }
+      }, (err) => {
+        if (err) { console.warn('QR render failed for', loc.id, err); return; }
+        qrCache[loc.id] = canvas.toDataURL('image/png');
       });
     }
 
-    render();
+    function bindCardActions() {
+      document.querySelectorAll('[data-download]').forEach(b => {
+        b.onclick = () => {
+          const id = b.dataset.download;
+          const canvas = document.getElementById(`qr-${id}`);
+          if (!canvas) { alert('QR 尚未產生，請先點「重新產生全部」'); return; }
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL('image/png');
+          link.download = `QR_${id}.png`;
+          link.click();
+        };
+      });
+      document.querySelectorAll('[data-copy]').forEach(b => {
+        b.onclick = async () => {
+          const id = b.dataset.copy;
+          try {
+            await navigator.clipboard.writeText(urlFor(id));
+            const orig = b.textContent;
+            b.textContent = '✓ 已複製';
+            setTimeout(() => { b.textContent = orig; }, 1500);
+          } catch (e) {
+            alert('複製失敗：' + e.message);
+          }
+        };
+      });
+    }
+
+    async function downloadAllZip() {
+      if (typeof JSZip === 'undefined') { alert('ZIP 元件尚未載入，請稍後再試'); return; }
+      if (typeof QRCode === 'undefined') { alert('QR 元件尚未載入，請先按「重新產生全部」'); return; }
+      setStatus('打包中…');
+      const zip = new JSZip();
+      const locs = LOCATIONS;
+      for (const l of locs) {
+        // 暫時產生一張 canvas 取 PNG
+        const tmp = document.createElement('canvas');
+        await new Promise((resolve, reject) => {
+          QRCode.toCanvas(tmp, urlFor(l.id), { width: 400, margin: 2, color: { dark: '#111827', light: '#ffffff' } }, (err) => err ? reject(err) : resolve());
+        });
+        const blob = await new Promise(r => tmp.toBlob(r, 'image/png'));
+        zip.file(`QR_${l.id}_${l.name}.png`, blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = `sunmoonlake_QRs_${Date.now()}.zip`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      setStatus(`已打包 ${locs.length} 個 QR`, 'ok');
+    }
+
+    function init() {
+      renderFilters();
+      renderGrid();
+      if (typeof QRCode !== 'undefined') {
+        setStatus(`已產生 ${LOCATIONS.length} 個 QR`, 'ok');
+      } else {
+        setStatus('QR 元件載入中…');
+        // 最多等 3 秒看 QRCode 是否載入（CDN 延遲）
+        let tries = 0;
+        const timer = setInterval(() => {
+          tries++;
+          if (typeof QRCode !== 'undefined') {
+            clearInterval(timer);
+            renderGrid();
+            setStatus(`已產生 ${LOCATIONS.length} 個 QR`, 'ok');
+          } else if (tries > 15) {
+            clearInterval(timer);
+            setStatus('QR 元件載入失敗（請檢查網路）', 'fail');
+          }
+        }, 200);
+      }
+    }
+
+    document.getElementById('regenAll').onclick = () => { renderGrid(); setStatus(`已重新產生 ${LOCATIONS.length} 個 QR`, 'ok'); };
+    document.getElementById('downloadAll').onclick = downloadAllZip;
+    document.getElementById('printAll').onclick = () => window.print();
+
+    init();
   </script>
 </body>
 </html>
