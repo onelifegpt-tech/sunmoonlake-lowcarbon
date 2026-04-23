@@ -1,0 +1,166 @@
+/* ============================================
+ * 後台共用左側導航
+ * 使用方式：任何後台頁面 <head> 加入
+ *   <link rel="stylesheet" href="assets/admin-nav.css">
+ *   <script src="assets/admin-nav.js" defer></script>
+ * 即可自動注入 sidebar 並 wrap 原有內容
+ * ============================================ */
+
+:root {
+  --an-sidebar-w: 240px;
+  --an-sidebar-bg: #ffffff;
+  --an-sidebar-border: #e5e7eb;
+  --an-sidebar-text: #374151;
+  --an-sidebar-muted: #9ca3af;
+  --an-sidebar-active-bg: #111827;
+  --an-sidebar-active-text: #ffffff;
+  --an-sidebar-hover-bg: #f3f4f6;
+  --an-group-label: #9ca3af;
+}
+
+/* 當 JS 成功注入後、body 會加上 .admin-shell class */
+body.admin-shell {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  background: #f9fafb !important;
+  min-height: 100vh;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: var(--an-sidebar-w);
+  min-width: var(--an-sidebar-w);
+  background: var(--an-sidebar-bg);
+  border-right: 1px solid var(--an-sidebar-border);
+  padding: 24px 16px 40px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Helvetica Neue', sans-serif;
+}
+
+.admin-sidebar-brand {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #111827;
+  padding: 0 12px 20px;
+  border-bottom: 1px solid var(--an-sidebar-border);
+  margin-bottom: 16px;
+}
+.admin-sidebar-brand small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--an-sidebar-muted);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.admin-sidebar-group {
+  margin-top: 16px;
+}
+.admin-sidebar-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--an-group-label);
+  padding: 0 12px 8px;
+  letter-spacing: 0.05em;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--an-sidebar-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: background 0.12s, color 0.12s;
+  margin-bottom: 2px;
+}
+.admin-sidebar-link:hover {
+  background: var(--an-sidebar-hover-bg);
+}
+.admin-sidebar-link.active {
+  background: var(--an-sidebar-active-bg);
+  color: var(--an-sidebar-active-text);
+}
+.admin-sidebar-link .an-icon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-divider {
+  height: 1px;
+  background: var(--an-sidebar-border);
+  margin: 16px 0;
+}
+
+.admin-sidebar-footer {
+  font-size: 10px;
+  color: var(--an-sidebar-muted);
+  padding: 16px 12px 0;
+  line-height: 1.5;
+}
+
+/* 主內容區 */
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  max-width: none !important;
+  overflow-x: auto;
+}
+
+/* 內部 toolbar 上的舊 nav（admin.html 原本的）仍保留可用，但隱藏其中會重覆的連結 */
+.admin-main .toolbar .nav { display: none; }
+
+/* 手機：側欄收合為漢堡選單 */
+.admin-hamburger {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1001;
+  background: #111827;
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    z-index: 1000;
+    transition: left 0.25s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+  }
+  .admin-sidebar.open { left: 0; }
+  .admin-main { padding-top: 60px; }
+  .admin-hamburger { display: block; }
+  .admin-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 999;
+  }
+  .admin-backdrop.open { display: block; }
+}
