@@ -1,0 +1,589 @@
+/* ============================================
+ * 後台統一視覺主題（BOOKING FAST 風格）
+ * 覆蓋各頁原有的漸層 header、彩色按鈕、彩色 badge
+ * 僅作用於 body.admin-shell（由 admin-nav.js 標記）
+ * 不影響遊客端頁面
+ * ============================================ */
+
+:root {
+  --at-ink-900: #111827;
+  --at-ink-700: #374151;
+  --at-ink-500: #6b7280;
+  --at-ink-400: #9ca3af;
+  --at-ink-300: #d1d5db;
+  --at-line:    #e5e7eb;
+  --at-surface: #ffffff;
+  --at-canvas:  #fafafa;
+  --at-accent:  #111827;
+  --at-accent-hover: #1f2937;
+  --at-success: #16a34a;
+  --at-warn:    #d97706;
+  --at-danger:  #dc2626;
+  --at-soft-bg: #f9fafb;
+}
+
+body.admin-shell {
+  background: var(--at-canvas) !important;
+  font-family: -apple-system, 'PingFang TC', 'Noto Sans TC', 'Helvetica Neue', 'Inter', sans-serif;
+  color: var(--at-ink-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===========================================
+ * 統一頁面標題區（取代各頁漸層 header）
+ * =========================================== */
+body.admin-shell .admin-header,
+body.admin-shell .dash-header,
+body.admin-shell .ra-header,
+body.admin-shell .rv-header,
+body.admin-shell .verify-header,
+body.admin-shell .merchant-header,
+body.admin-shell .mem-header {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-900) !important;
+  border-bottom: 1px solid var(--at-line) !important;
+  padding: 28px 32px !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+body.admin-shell .admin-header h1,
+body.admin-shell .dash-header h1,
+body.admin-shell .ra-header h1,
+body.admin-shell .rv-header h1,
+body.admin-shell .verify-header h1,
+body.admin-shell .merchant-header h1,
+body.admin-shell .mem-header h1 {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: var(--at-ink-900) !important;
+  margin: 0 0 4px !important;
+  letter-spacing: -0.01em;
+}
+
+body.admin-shell .admin-header p,
+body.admin-shell .dash-header p,
+body.admin-shell .ra-header p,
+body.admin-shell .rv-header p,
+body.admin-shell .verify-header p,
+body.admin-shell .merchant-header p,
+body.admin-shell .mem-header p,
+body.admin-shell .ra-sub,
+body.admin-shell .rv-sub {
+  color: var(--at-ink-500) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  letter-spacing: 0.02em;
+}
+
+/* 徽章式小 eyebrow（SBIR 對應徽章之類）→ 簡化為灰色文字 */
+body.admin-shell .dash-header > span,
+body.admin-shell .dash-header > div[style*="background"] {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+  margin-top: 8px !important;
+}
+
+/* ===========================================
+ * 內容 panel / card 統一
+ * =========================================== */
+body.admin-shell .panel,
+body.admin-shell .ra-card,
+body.admin-shell .rv-card,
+body.admin-shell .qr-card,
+body.admin-shell .stat-card,
+body.admin-shell .news-item,
+body.admin-shell .kpi-box,
+body.admin-shell .input-section,
+body.admin-shell .recent-item,
+body.admin-shell .mem-card {
+  background: var(--at-surface) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* ===========================================
+ * 按鈕統一（黑底白字 / 白底黑字邊框）
+ * =========================================== */
+body.admin-shell button.btn,
+body.admin-shell button[class*="primary"],
+body.admin-shell button[class*="save"],
+body.admin-shell .rv-btn.ok,
+body.admin-shell .ra-btn.primary,
+body.admin-shell label.ra-btn.primary,
+body.admin-shell .period-btn.active {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--at-accent) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: background 0.12s, transform 0.08s !important;
+  box-shadow: none !important;
+}
+body.admin-shell button.btn:hover,
+body.admin-shell button[class*="primary"]:hover,
+body.admin-shell button[class*="save"]:hover,
+body.admin-shell .rv-btn.ok:hover,
+body.admin-shell .ra-btn.primary:hover,
+body.admin-shell label.ra-btn.primary:hover {
+  background: var(--at-accent-hover) !important;
+}
+
+/* 次要按鈕：白底 + 灰邊 */
+body.admin-shell .btn-outline,
+body.admin-shell button[class*="clear"],
+body.admin-shell .ra-btn.ghost,
+body.admin-shell .period-btn,
+body.admin-shell .rv-filter,
+body.admin-shell .cat-chip,
+body.admin-shell .btn-reset {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+body.admin-shell .btn-outline:hover,
+body.admin-shell .ra-btn.ghost:hover,
+body.admin-shell .period-btn:hover,
+body.admin-shell .rv-filter:hover,
+body.admin-shell .btn-reset:hover {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-900) !important;
+}
+body.admin-shell .period-btn.active,
+body.admin-shell .rv-filter.active,
+body.admin-shell .cat-chip.active {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--at-accent) !important;
+}
+
+/* 危險操作：白底紅字、hover 轉紅底 */
+body.admin-shell .rv-btn.fail,
+body.admin-shell .ra-btn.danger,
+body.admin-shell [class*="danger"],
+body.admin-shell .btn-delete {
+  background: var(--at-surface) !important;
+  color: var(--at-danger) !important;
+  border: 1px solid #fecaca !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+body.admin-shell .rv-btn.fail:hover,
+body.admin-shell .ra-btn.danger:hover {
+  background: var(--at-danger) !important;
+  color: #ffffff !important;
+  border-color: var(--at-danger) !important;
+}
+
+/* ===========================================
+ * 數字 / KPI 統一黑色
+ * =========================================== */
+body.admin-shell .stat-value,
+body.admin-shell .kpi-value,
+body.admin-shell .ihs-value {
+  color: var(--at-ink-900) !important;
+  font-weight: 700 !important;
+}
+body.admin-shell .stat-label,
+body.admin-shell .kpi-label,
+body.admin-shell .ihs-label {
+  color: var(--at-ink-500) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase;
+}
+
+/* 已完成合作業者等綠色字 → 保留微綠但降飽和 */
+body.admin-shell .stat-value[style*="color:#06C755"],
+body.admin-shell .stat-value[style*="color: #06C755"],
+body.admin-shell [style*="color:#10b981"],
+body.admin-shell [style*="color: #10b981"] {
+  color: var(--at-success) !important;
+}
+
+/* ===========================================
+ * 標籤 / badge 統一
+ * =========================================== */
+body.admin-shell .badge,
+body.admin-shell .ra-tag,
+body.admin-shell .rv-tag,
+body.admin-shell .loc-cat-pill {
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 3px 8px !important;
+  font-size: 10.5px !important;
+  letter-spacing: 0.02em;
+}
+
+/* 預設的灰色樣式 */
+body.admin-shell .ra-tag,
+body.admin-shell .rv-tag {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+}
+
+/* 後台標籤：上傳狀態 */
+body.admin-shell .ra-tag-source {
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.05em !important;
+}
+body.admin-shell .ra-tag-source.uploaded {
+  background: var(--at-ink-900) !important;
+  color: #ffffff !important;
+}
+body.admin-shell .ra-tag-source.fallback {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-500) !important;
+  border: 1px solid var(--at-line);
+}
+body.admin-shell .ra-tag-source.none {
+  background: #fef2f2 !important;
+  color: var(--at-danger) !important;
+}
+
+/* ===========================================
+ * Filter chips（review / refs）
+ * =========================================== */
+body.admin-shell .rv-filter {
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+}
+
+/* ===========================================
+ * 表格統一
+ * =========================================== */
+body.admin-shell table,
+body.admin-shell .loc-table {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+body.admin-shell .loc-table th {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-500) !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid var(--at-line) !important;
+  text-transform: uppercase;
+  font-size: 10.5px !important;
+  letter-spacing: 0.05em !important;
+}
+body.admin-shell .loc-table tr.selected {
+  background: var(--at-soft-bg) !important;
+}
+
+/* ===========================================
+ * Toolbar（admin.html 上的）
+ * =========================================== */
+body.admin-shell .toolbar {
+  background: var(--at-surface) !important;
+  border-bottom: 1px solid var(--at-line) !important;
+  padding: 12px 32px !important;
+  box-shadow: none !important;
+}
+
+/* ===========================================
+ * 輸入框
+ * =========================================== */
+body.admin-shell input[type="text"],
+body.admin-shell input[type="password"],
+body.admin-shell input[type="search"],
+body.admin-shell input[type="email"],
+body.admin-shell input[type="tel"],
+body.admin-shell input[type="url"],
+body.admin-shell input[type="number"],
+body.admin-shell select,
+body.admin-shell textarea {
+  background: var(--at-surface) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: var(--at-ink-900) !important;
+  font-size: 13px !important;
+  transition: border-color 0.12s !important;
+}
+body.admin-shell input:focus,
+body.admin-shell select:focus,
+body.admin-shell textarea:focus {
+  outline: none !important;
+  border-color: var(--at-ink-900) !important;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.06) !important;
+}
+
+/* ===========================================
+ * 綠色／橙色重點連結弱化為黑色底色
+ * =========================================== */
+body.admin-shell a[style*="color:#06C755"],
+body.admin-shell a[style*="color: #06C755"] {
+  color: var(--at-ink-900) !important;
+  text-decoration: underline;
+}
+
+/* ===========================================
+ * 特殊：覆核中／pending 狀態指示仍保留（需辨識度）
+ * =========================================== */
+body.admin-shell .ra-tag.warn,
+body.admin-shell .rv-tag.warn {
+  background: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+body.admin-shell .ra-tag.fail,
+body.admin-shell .rv-tag.fail {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+body.admin-shell .ra-tag.ok,
+body.admin-shell .rv-tag.ok {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+/* ===========================================
+ * 說明 / note 框
+ * =========================================== */
+body.admin-shell .ra-note {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: 10px !important;
+  padding: 14px 16px !important;
+  font-size: 12.5px !important;
+}
+body.admin-shell .ra-note b { color: var(--at-ink-900) !important; }
+
+/* ===========================================
+ * Merchant 頁 filter bar
+ * =========================================== */
+body.admin-shell .filter-bar {
+  background: var(--at-surface) !important;
+  border-bottom: 1px solid var(--at-line) !important;
+  box-shadow: none !important;
+}
+
+/* ===========================================
+ * 統一 reset / 危險操作連結
+ * =========================================== */
+body.admin-shell .reset-link {
+  color: var(--at-ink-400) !important;
+  font-size: 11px !important;
+}
+
+/* ===========================================
+ * 攻擊性 inline style 補救
+ * =========================================== */
+
+/* 任何含這些品牌色的 inline button → 統一為黑色 */
+body.admin-shell button[style*="background:#f38020"],
+body.admin-shell button[style*="background: #f38020"],
+body.admin-shell button[style*="background:#06C755"],
+body.admin-shell button[style*="background: #06C755"],
+body.admin-shell button[style*="background:#10b981"],
+body.admin-shell button[style*="background: #10b981"],
+body.admin-shell button[style*="background:#3b82f6"],
+body.admin-shell button[style*="background: #3b82f6"],
+body.admin-shell button[style*="background:#059669"] {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--at-accent) !important;
+  border-radius: 8px !important;
+}
+
+/* 危險色 inline button */
+body.admin-shell button[style*="background:#fee2e2"],
+body.admin-shell button[style*="background: #fee2e2"],
+body.admin-shell button[style*="background:#ef4444"],
+body.admin-shell button[style*="background:#dc2626"] {
+  background: var(--at-surface) !important;
+  color: var(--at-danger) !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 8px !important;
+}
+
+/* Merchant filter buttons */
+body.admin-shell .filter-btn {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  box-shadow: none !important;
+}
+body.admin-shell .filter-btn:hover {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-900) !important;
+}
+body.admin-shell .filter-btn.active {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--at-accent) !important;
+}
+
+/* Merchant print button */
+body.admin-shell .print-btn {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--at-accent) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.15) !important;
+}
+body.admin-shell .print-btn:hover {
+  background: var(--at-accent-hover) !important;
+}
+
+/* 產品 badge（points / co2）→ 灰階 */
+body.admin-shell .badge.points,
+body.admin-shell .badge.co2,
+body.admin-shell .badge.photo,
+body.admin-shell .badge.qr {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+}
+
+/* dashboard 的綠色「對標南投 115 年度地方型 SBIR 對應平台」徽章 */
+body.admin-shell .dash-header [style*="background"][style*="#06C755"],
+body.admin-shell .dash-header [style*="background"][style*="#d1fae5"] {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+}
+
+/* dashboard「合作業者 18 家」 inline 綠字 → 保留微綠 */
+body.admin-shell .stat-value[style*="#06C755"] {
+  color: var(--at-success) !important;
+}
+
+/* admin.html 裡所有 inline 綠色連結／文字 → 黑色 */
+body.admin-shell a[style*="#06C755"] {
+  color: var(--at-ink-900) !important;
+}
+
+/* 工具列（admin.html 的 .toolbar 按鈕）微調 */
+body.admin-shell .toolbar .btn-reset {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+}
+
+/* members.html 頂部狀態 pills → 降飽和 */
+body.admin-shell .oa-tag {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  padding: 3px 10px !important;
+  font-size: 11px !important;
+}
+
+/* 黃色 demo 狀態 pill（inline style） */
+body.admin-shell .mem-header span[style*="rgb(251, 191, 36)"],
+body.admin-shell .mem-header span[style*="background:#fbbf24"],
+body.admin-shell .mem-header span[style*="background: #fbbf24"] {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-warn) !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 999px !important;
+  padding: 3px 10px !important;
+  font-weight: 600 !important;
+}
+
+/* members.html 快捷連結列 → 低調文字 */
+body.admin-shell .mem-header > div[style*="display"] a,
+body.admin-shell .mem-header a[style] {
+  color: var(--at-ink-500) !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+}
+body.admin-shell .mem-header > div[style*="display"] a:hover {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-900) !important;
+}
+
+/* members.html 會員列表 VIP badge */
+body.admin-shell .member-vip {
+  background: var(--at-ink-900) !important;
+  color: #fff !important;
+  border: none !important;
+  font-size: 9px !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* members.html 的「活躍」綠色 pill → 微綠 */
+body.admin-shell [style*="background:#d1fae5"],
+body.admin-shell [style*="background: #d1fae5"] {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+/* 全體推播黃色提示框 → 淺灰 */
+body.admin-shell [style*="background:#fef3c7"],
+body.admin-shell [style*="background: #fef3c7"] {
+  background: var(--at-soft-bg) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+}
+
+/* Rich Menu 工具列按鈕 */
+body.admin-shell .rm-btn {
+  background: var(--at-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--at-accent) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+body.admin-shell .rm-btn:hover {
+  background: var(--at-accent-hover) !important;
+}
+body.admin-shell .rm-btn.alt {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-700) !important;
+  border: 1px solid var(--at-line) !important;
+}
+body.admin-shell .rm-btn.alt:hover {
+  background: var(--at-soft-bg) !important;
+}
+
+/* Rich Menu 頂部工具列背景 */
+body.admin-shell .rm-toolbar {
+  background: var(--at-surface) !important;
+  color: var(--at-ink-900) !important;
+  border-bottom: 1px solid var(--at-line) !important;
+  box-shadow: none !important;
+}
+body.admin-shell .rm-toolbar h1 {
+  color: var(--at-ink-900) !important;
+}
