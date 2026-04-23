@@ -222,11 +222,11 @@
 
       grid.innerHTML = landmarks.map(l => {
         const up = uploaded[l.id];
-        const tagText  = up ? '已上傳' : '尚未設定';
-        const tagClass = up ? 'uploaded' : 'none';
+        const tagText  = up ? '後台上傳' : '預設檔案';
+        const tagClass = up ? 'uploaded' : 'fallback';
         const imgHtml  = up
           ? `<img src="${up}" alt="${l.name}">`
-          : `<div class="ra-placeholder"><div class="ra-placeholder-icon">📷</div>尚未上傳參考照<br><span style="font-size:10px">無 GPS 的使用者將全部進覆核</span></div>`;
+          : `<img src="${l.refPhoto}" alt="${l.name}" data-fallback-id="${l.id}">`;
         return `
           <div class="ra-card">
             <div class="ra-photo-wrap">
@@ -252,6 +252,17 @@
           </div>
         `;
       }).join('');
+
+      // fallback 檔案載入失敗時，替換為尚未設定的 placeholder
+      grid.querySelectorAll('img[data-fallback-id]').forEach(img => {
+        img.addEventListener('error', () => {
+          const wrap = img.closest('.ra-photo-wrap');
+          const tag = wrap.querySelector('.ra-tag-source');
+          tag.textContent = '尚未設定';
+          tag.className = 'ra-tag-source none';
+          img.outerHTML = `<div class="ra-placeholder"><div class="ra-placeholder-icon">📷</div>尚未上傳參考照<br><span style="font-size:10px">無 GPS 的使用者將全部進覆核</span></div>`;
+        });
+      });
 
       // 畫 hash 預覽
       landmarks.forEach(l => {
